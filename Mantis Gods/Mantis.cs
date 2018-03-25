@@ -8,11 +8,13 @@ using Modding;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using static FsmUtil.FsmUtil;
+using System.Reflection;
 
 namespace Mantis_Gods
 {
     class Mantis : MonoBehaviour
     {
+        public GameObject MantisBattle;
         public GameObject lord2, lord3, lord1;
         public bool p1, p2, p3;
 
@@ -20,6 +22,7 @@ namespace Mantis_Gods
         {
             ModHooks.Instance.BeforeSceneLoadHook += reset;
         }
+
 
         private string reset(string sceneName)
         {
@@ -40,13 +43,24 @@ namespace Mantis_Gods
             PlayMakerFSM lordHealth = FSMUtility.LocateFSM(lord, "health_manager_enemy");
 
             // boost health
-            lordHealth.FsmVariables.GetFsmInt("HP").Value *= 3;
+            // checks for null due to patch changes
+            if (lordHealth != null)
+            {
+                lordHealth.FsmVariables.GetFsmInt("HP").Value *= 3;
+            } else {
+                var lordHM = lord.GetComponent("HealthManager");
+                FieldInfo fi = lordHM.GetType().GetField("hp");
+                var temp = (int)fi.GetValue(lordHM);
+                Log(temp.ToString());
+                fi.SetValue(lordHM, temp * 3);
+                Log(fi.GetValue(lordHM).ToString());
+            }
 
             // Remove Idle.
             Wait IdleAction;
-            IdleAction = (Wait) GetAction(lordFSM, "Idle", 0);
+            IdleAction = (Wait)GetAction(lordFSM, "Idle", 0);
             IdleAction.time.Value = 0;
-            IdleAction = (Wait) GetAction(lordFSM, "Start Pause", 0);
+            IdleAction = (Wait)GetAction(lordFSM, "Start Pause", 0);
             IdleAction.time.Value = 0;
 
             // Speed up throwing
@@ -78,39 +92,81 @@ namespace Mantis_Gods
         {
             // If phase 1 hasn't been set to true, find the mantis lord
             // Unless it's phase 2 or phase 1 has been completed, leaving lord1 not null
-            if (lord1 == null)
+            if (lord1 == null | lord2 == null | lord3 == null)
             {
-                lord1 = GameObject.Find("Mantis Lord");
-            }
-            else if (!p2)
-            {
-                updateLord(lord1);
-                p2 = true;
-            }
+                if (MantisBattle == null)
+                {
+                    MantisBattle = GameObject.Find("Mantis Battle");
+                    if (MantisBattle != null)
+                    {
+                        Log("Got mantis battle");
+                    }
+                }
 
-            // If phase 2 hasn't been set
-            // unless it's phase 3
-            if (lord3 == null || lord2 == null)
-            {
-                lord2 = GameObject.Find("Mantis Lord S1");
-                lord3 = GameObject.Find("Mantis Lord S2");
-            }
-            else if (!p3)
-            {
-                updateLord(lord2);
-                updateLord(lord3);
-                p3 = true;
+                if (lord1 == null)
+                {
+                    lord1 = Extensions.FindGameObjectInChildren(MantisBattle, "Mantis Lord");
+                    if (lord1 != null)
+                    {
+                        Log("Got mantis lord");
+
+                        // idk why this works
+                        // but it does
+                        updateLord(lord1);
+                        p2 = true;
+                    }
+                    else
+                    {
+                        // for earlier patches
+                        lord1 = GameObject.Find("Mantis Lord");
+                    }
+                }
+                else if (!p2)
+                {
+                    updateLord(lord1);
+                    p2 = true;
+                }
+
+                // If phase 2 hasn't been set
+                // unless it's phase 3
+                if (lord3 == null || lord2 == null)
+                {
+                    //lord2 = GameObject.Find("Mantis Lord S1");
+                    //lord3 = GameObject.Find("Mantis Lord S2");
+                    lord2 = Extensions.FindGameObjectInChildren(MantisBattle, "Mantis Lord S1");
+                    lord3 = Extensions.FindGameObjectInChildren(MantisBattle, "Mantis Lord S2");
+
+                    if (lord2 != null && lord3 != null)
+                    {
+                        Log("Got mantis lordSSS");
+                        updateLord(lord2);
+                        updateLord(lord3);
+                        p3 = true;
+                    }
+                    else
+                    {
+                        lord2 = GameObject.Find("Mantis Lord S1");
+                        lord3 = GameObject.Find("Mantis Lord S2");
+                    }
+                }
+                else if (!p3)
+                {
+                    updateLord(lord2);
+                    updateLord(lord3);
+                    p3 = true;
+                }
             }
         }
-    
+
         public void Log(String str)
         {
             Modding.Logger.Log("[Mantis Gods]: " + str);
         }
-        
+
         public void OnDestroy()
         {
             ModHooks.Instance.BeforeSceneLoadHook -= reset;
         }
+
     }
 }
