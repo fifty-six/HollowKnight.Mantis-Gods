@@ -65,7 +65,7 @@ namespace Mantis_Gods
 
             // Speed up throwing
             IdleAction = (Wait)GetAction(lordFSM, "Throw CD", 0);
-            IdleAction.time.Value /= 3;
+            IdleAction.time.Value /= 4;
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
@@ -76,16 +76,33 @@ namespace Mantis_Gods
             lordAnim.GetClipByName("Dash Arrive").fps = 60;
             lordAnim.GetClipByName("Dash Attack").fps = 45;
 
+
             // Repeat for down stab
             lordAnim.GetClipByName("Dstab Leave").fps = 45;
-            lordAnim.GetClipByName("Dstab Arrive").fps = 30;
+            // 30
+            lordAnim.GetClipByName("Dstab Arrive").fps = 34;
 
             // Repeat for wall throw
             lordAnim.GetClipByName("Wall Arrive").fps = 45;
             lordAnim.GetClipByName("Throw").fps = 75;
 
+            if (lord.name.Contains("S"))
+            {
+                updatePhase2(lordFSM);
+            }
+
             Log("Updated lord: " + lord.name);
 
+        }
+
+        public void updatePhase2(PlayMakerFSM lordFSM)
+        {
+            SendRandomEventV3 rand = (SendRandomEventV3) GetAction(lordFSM, "Attack Choice", 5);
+
+            // DASH, DSTAB, THROW
+            // 1, 1, 1 => 1/6
+            rand.weights[2].Value /= 6f;
+            Log("Updated Phase 2 Lord: " + lordFSM.name);
         }
 
         public void Update()
