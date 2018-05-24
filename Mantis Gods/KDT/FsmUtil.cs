@@ -9,7 +9,6 @@ namespace FsmUtil
 {
     static class FsmUtil
     {
-
         public static T[] RemoveAt<T>(this T[] source, int index)
         {
             T[] dest = new T[source.Length - 1];
@@ -42,7 +41,6 @@ namespace FsmUtil
             {
                 if (fsm.FsmStates[i].Name == stateName)
                 {
-
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
@@ -51,7 +49,6 @@ namespace FsmUtil
                     actions.RemoveAt(index);
 
                     fsm.FsmStates[i].Actions = actions;
-
                 }
             }
         }
@@ -62,7 +59,6 @@ namespace FsmUtil
             {
                 if (fsm.FsmStates[i].Name == stateName)
                 {
-
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     return fsm.FsmStates[i];
@@ -77,7 +73,6 @@ namespace FsmUtil
             {
                 if (fsm.FsmStates[i].Name == stateName)
                 {
-
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
@@ -89,21 +84,18 @@ namespace FsmUtil
             return null;
         }
 
-
         public static void AddAction(PlayMakerFSM fsm, string stateName, FsmStateAction action)
         {
             for (int i = 0; i < fsm.FsmStates.Length; i++)
             {
                 if (fsm.FsmStates[i].Name == stateName)
                 {
-
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
                     actions[actions.Length - 1] = action;
 
                     fsm.FsmStates[i].Actions = actions;
-
                 }
             }
         }
@@ -250,6 +242,5 @@ namespace FsmUtil
                 }
             }
         }
-
     }
 }

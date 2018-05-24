@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Modding;
-using GlobalEnums;
 using UnityEngine;
-using HutongGames.PlayMaker;
-using FsmUtil;
+using UObject = UnityEngine.Object;
 
 namespace Mantis_Gods
 {
-    public class MantisGods : Modding.Mod
+    public class MantisGods : Modding.Mod, ITogglableMod
     {
-        private static string version = "1.0.0";
+        private const string version = "1.0.0";
 
         public override string GetVersion()
         {
@@ -23,6 +20,12 @@ namespace Mantis_Gods
             Log("Initializing.");
             ModHooks.Instance.AfterSavegameLoadHook += AddComponent;
             ModHooks.Instance.NewGameHook += NewGame;
+
+            // in game
+            if (HeroController.instance != null && GameManager.instance.gameObject.GetComponent<Mantis>() == null)
+            {
+                GameManager.instance.gameObject.AddComponent<Mantis>();
+            }
         }
 
         private void NewGame()
@@ -35,7 +38,19 @@ namespace Mantis_Gods
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }
 
+        public void Unload()
+        {
+            ModHooks.Instance.AfterSavegameLoadHook -= AddComponent;
+            ModHooks.Instance.NewGameHook -= NewGame;
+
+            // in game
+            if (GameManager.instance != null)
+            {
+                GameObject.Destroy(GameManager.instance.gameObject.GetComponent<Mantis>());
+            }
+        }
     }
+
     public static class Extensions
     {
         public static GameObject FindGameObjectInChildren(this GameObject gameObject, string name)
@@ -49,7 +64,6 @@ namespace Mantis_Gods
                     return t.gameObject;
             }
             return null;
-
         }
     }
 }

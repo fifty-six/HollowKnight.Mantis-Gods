@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Mantis_Gods</RootNamespace>
     <AssemblyName>Mantis Gods</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,9 +30,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Hooks">
+      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\New folder\Hooks.dll</HintPath>
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\PlayMaker.dll</HintPath>
@@ -61,4 +68,10 @@
     <Content Include="KDT\TextFile1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>@echo on
+SET MOD_DEST="D:\Steam\\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\"
+echo Copying mod
+copy "$(TargetPath)" %25MOD_DEST%25</PostBuildEvent>
+  </PropertyGroup>
 </Project>
