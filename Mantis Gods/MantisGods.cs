@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using System.IO;
 using Modding;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
 namespace Mantis_Gods
 {
-    public class MantisGods : Modding.Mod, ITogglableMod
+    public class MantisGods : Modding.Mod <MantisSettings, MantisGlobalSettings>, ITogglableMod
     {
         private const string version = "1.0.0";
 
@@ -32,12 +33,36 @@ namespace Mantis_Gods
 
         private void NewGame()
         {
+            SetupSettings();
+
+            if (GlobalSettings.rainbowFloor)
+            {
+                Mantis.rainbowFloor = true;
+                Mantis.rainbowUpdateDelay = GlobalSettings.rainbowUpdateDelay;
+            } else
+            {
+                Mantis.floorColor = new Color(GlobalSettings.floorColorRed, GlobalSettings.floorColorGreen, GlobalSettings.floorColorBlue, GlobalSettings.floorColorAlpha);
+            }
+
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }
 
         private void AddComponent(SaveGameData data)
         {
-            GameManager.instance.gameObject.AddComponent<Mantis>();
+            NewGame();
+        }
+
+        private void SetupSettings()
+        {
+            string settingsFilePath = Application.persistentDataPath + ModHooks.PathSeperator + GetType().Name + ".GlobalSettings.json";
+
+            bool forceReloadGlobalSettings = (GlobalSettings != null && GlobalSettings.SettingsVersion != VersionInfo.SettingsVer);
+
+            if (forceReloadGlobalSettings || !File.Exists(settingsFilePath))
+            {
+                GlobalSettings.Reset();
+            }
+            SaveGlobalSettings();
         }
 
         public void Unload()

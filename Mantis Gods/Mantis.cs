@@ -19,6 +19,14 @@ namespace Mantis_Gods
     {
         public GameObject MantisBattle;
         public GameObject lord2, lord3, lord1, shot;
+        public GameObject fireball;
+        public GameObject plane;
+
+        public static bool rainbowFloor;
+        public static Color floorColor;
+        public int rainbowPos;
+        public static int rainbowUpdateDelay;
+        public int currentDelay;
 
         public void Start()
         {
@@ -57,7 +65,7 @@ namespace Mantis_Gods
             spc.DisableParticles();
 
 
-            GameObject plane = new GameObject("Plane");
+            plane = new GameObject("Plane");
 
             // make it able to be walked on 
             plane.tag = "HeroWalkable";
@@ -69,14 +77,23 @@ namespace Mantis_Gods
             MeshRenderer renderer = plane.AddComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("Particles/Additive");
 
+            // Color
+            if (rainbowFloor)
+            {
+                System.Random rand = new System.Random();
+                rainbowPos = rand.Next(0, 767);
+                floorColor = getNextRainbowColor();
+                currentDelay = 0;
+            }
+
             // Texture
             Texture2D tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, Color.black);
+            tex.SetPixel(0, 0, floorColor);
             tex.Apply();
 
             // Renderer
             renderer.material.mainTexture = tex;
-            renderer.material.color = Color.black;
+            renderer.material.color = Color.white;
 
             // Collider
             BoxCollider2D a = plane.AddComponent<BoxCollider2D>();
@@ -223,6 +240,20 @@ namespace Mantis_Gods
 
         public void Update()
         {
+            if (rainbowFloor)
+            {
+                currentDelay++;
+                if (currentDelay >= rainbowUpdateDelay)
+                {
+                    Texture2D tex = new Texture2D(1, 1);
+                    tex.SetPixel(0, 0, getNextRainbowColor());
+                    tex.Apply();
+                    plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
+                    currentDelay = 0;
+                }
+            }
+
+
             //shot = GameObject.Find("Shot Mantis Lord");
             //PlayMakerFSM shotFSM = shot?.LocateMyFSM("Control");
             //if (shotFSM != null)
@@ -255,6 +286,41 @@ namespace Mantis_Gods
             UpdateLord(lord2);
             UpdateLord(lord3);
         }
+
+        public void rainbowFloorColorGen()
+        {
+
+
+        }
+
+        public Color getNextRainbowColor()
+        {
+            Color c = new Color();
+            // the cycle repeats every 768
+
+            int realCyclePos = rainbowPos % 768;
+            c.a = 1.0f;
+            if (realCyclePos < 256)
+            {
+                c.b = 0;
+                c.r = (float) (((256 - realCyclePos))/(256.0));
+                c.g = (float) (realCyclePos / 256.0);
+            } else if (realCyclePos < 512)
+            {
+                c.b = (float)( (realCyclePos - 256) / 256.0);
+                c.r = 0;
+                c.g = (float)(((512 - realCyclePos)) / (256.0));
+            } else
+            {
+                c.b = (float)(((768 - realCyclePos)) / (256.0));
+                c.r = (float)((realCyclePos - 512) / 256.0);
+                c.g = 0;
+            }
+
+            rainbowPos++;
+            return c;
+        }
+
 
         public void Log(String str)
         {
