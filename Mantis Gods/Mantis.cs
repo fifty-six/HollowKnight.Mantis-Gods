@@ -45,6 +45,7 @@ namespace Mantis_Gods
 
             if (arg0.name != "Fungus2_15_boss") return;
 
+            GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
             //foreach (GameObject go in GetObjectsFromScene("Fungus2_15"))
             foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
@@ -52,10 +53,8 @@ namespace Mantis_Gods
                     Destroy(go);
             }
 
-            Log("hi  hello");
             SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();
             spc.DisableParticles();
-            Log("hi  hello a");
 
 
             GameObject plane = new GameObject("Plane");
