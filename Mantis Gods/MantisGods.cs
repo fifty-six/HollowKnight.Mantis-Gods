@@ -9,10 +9,8 @@ using UObject = UnityEngine.Object;
 
 namespace Mantis_Gods
 {
-    public class MantisGods : Modding.Mod <MantisSettings, MantisGlobalSettings>, ITogglableMod
+    public class MantisGods : Mod<MantisSettings, MantisGlobalSettings>, ITogglableMod
     {
-        private const string version = "1.0.0";
-
         public override string GetVersion()
         {
             return FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(MantisGods)).Location).FileVersion;
@@ -35,13 +33,13 @@ namespace Mantis_Gods
         {
             SetupSettings();
 
-            if (GlobalSettings.rainbowFloor)
+            if (GlobalSettings.RainbowFloor)
             {
-                Mantis.rainbowFloor = true;
-                Mantis.rainbowUpdateDelay = GlobalSettings.rainbowUpdateDelay;
+                Mantis.RainbowFloor = true;
+                Mantis.RainbowUpdateDelay = GlobalSettings.RainbowUpdateDelay;
             } else
             {
-                Mantis.floorColor = new Color(GlobalSettings.floorColorRed, GlobalSettings.floorColorGreen, GlobalSettings.floorColorBlue, GlobalSettings.floorColorAlpha);
+                Mantis.FloorColor = new Color(GlobalSettings.FloorColorRed, GlobalSettings.FloorColorGreen, GlobalSettings.FloorColorBlue, GlobalSettings.FloorColorAlpha);
             }
 
             GameManager.instance.gameObject.AddComponent<Mantis>();
@@ -56,12 +54,13 @@ namespace Mantis_Gods
         {
             string settingsFilePath = Application.persistentDataPath + ModHooks.PathSeperator + GetType().Name + ".GlobalSettings.json";
 
-            bool forceReloadGlobalSettings = (GlobalSettings != null && GlobalSettings.SettingsVersion != VersionInfo.SettingsVer);
+            bool forceReloadGlobalSettings = (GlobalSettings != null && GlobalSettings.SettingsVersion != MantisGlobalSettings.SettingsVer);
 
             if (forceReloadGlobalSettings || !File.Exists(settingsFilePath))
             {
                 GlobalSettings.Reset();
             }
+
             SaveGlobalSettings();
         }
 
@@ -73,7 +72,7 @@ namespace Mantis_Gods
             // in game
             if (GameManager.instance != null)
             {
-                GameObject.Destroy(GameManager.instance.gameObject.GetComponent<Mantis>());
+                UObject.Destroy(GameManager.instance.gameObject.GetComponent<Mantis>());
             }
         }
     }

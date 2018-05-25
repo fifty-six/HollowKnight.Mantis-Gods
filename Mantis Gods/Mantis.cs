@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using HutongGames.PlayMaker.Actions;
+using Modding;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Modding;
-using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;
 using static FsmUtil.FsmUtil;
 using static FsmUtil.FsmutilExt;
-using System.Reflection;
-using System.Collections;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace Mantis_Gods
@@ -19,14 +13,13 @@ namespace Mantis_Gods
     {
         public GameObject MantisBattle;
         public GameObject lord2, lord3, lord1, shot;
-        public GameObject fireball;
         public GameObject plane;
 
-        public static bool rainbowFloor;
-        public static Color floorColor;
-        public int rainbowPos;
-        public static int rainbowUpdateDelay;
-        public int currentDelay;
+        public static bool RainbowFloor;
+        public static Color FloorColor;
+        public int RainbowPos;
+        public static int RainbowUpdateDelay;
+        public int CurrentDelay;
 
         public void Start()
         {
@@ -78,17 +71,17 @@ namespace Mantis_Gods
             renderer.material.shader = Shader.Find("Particles/Additive");
 
             // Color
-            if (rainbowFloor)
+            if (RainbowFloor)
             {
                 System.Random rand = new System.Random();
-                rainbowPos = rand.Next(0, 767);
-                floorColor = getNextRainbowColor();
-                currentDelay = 0;
+                RainbowPos = rand.Next(0, 767);
+                FloorColor = getNextRainbowColor();
+                CurrentDelay = 0;
             }
 
             // Texture
             Texture2D tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, floorColor);
+            tex.SetPixel(0, 0, FloorColor);
             tex.Apply();
 
             // Renderer
@@ -124,39 +117,6 @@ namespace Mantis_Gods
             m.RecalculateNormals();
             return m;
         }
-
-        //public static List<GameObject> GetObjectsFromScene(string sceneName)
-        //{
-        //    List<GameObject> list = new List<GameObject>();
-        //    GameObject[] rootGameObjects = UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName).GetRootGameObjects();
-        //    if (rootGameObjects != null && rootGameObjects.Length != 0 && rootGameObjects != null && rootGameObjects.Length != 0)
-        //    {
-        //        list.AddRange(rootGameObjects);
-        //        for (int i = 0; i < rootGameObjects.Length; i++)
-        //        {
-        //            List<Transform> list2 = new List<Transform>();
-        //            foreach (object obj in rootGameObjects[i].transform)
-        //            {
-        //                Transform transform = (Transform)obj;
-        //                list.Add(transform.gameObject);
-        //                list2.Add(transform);
-        //            }
-        //            for (int j = 0; j < list2.Count; j++)
-        //            {
-        //                if (list2[j].childCount > 0)
-        //                {
-        //                    foreach (object obj2 in list2[j])
-        //                    {
-        //                        Transform transform2 = (Transform)obj2;
-        //                        list.Add(transform2.gameObject);
-        //                        list2.Add(transform2);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return list;
-        //}
 
         public void UpdateLord(GameObject lord)
         {
@@ -240,16 +200,16 @@ namespace Mantis_Gods
 
         public void Update()
         {
-            if (rainbowFloor)
+            if (RainbowFloor)
             {
-                currentDelay++;
-                if (currentDelay >= rainbowUpdateDelay)
+                CurrentDelay++;
+                if (CurrentDelay >= RainbowUpdateDelay)
                 {
                     Texture2D tex = new Texture2D(1, 1);
                     tex.SetPixel(0, 0, getNextRainbowColor());
                     tex.Apply();
                     plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
-                    currentDelay = 0;
+                    CurrentDelay = 0;
                 }
             }
 
@@ -298,7 +258,7 @@ namespace Mantis_Gods
             Color c = new Color();
             // the cycle repeats every 768
 
-            int realCyclePos = rainbowPos % 768;
+            int realCyclePos = RainbowPos % 768;
             c.a = 1.0f;
             if (realCyclePos < 256)
             {
@@ -317,7 +277,7 @@ namespace Mantis_Gods
                 c.g = 0;
             }
 
-            rainbowPos++;
+            RainbowPos++;
             return c;
         }
 

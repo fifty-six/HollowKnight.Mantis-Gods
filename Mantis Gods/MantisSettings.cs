@@ -2,14 +2,13 @@
 
 namespace Mantis_Gods
 {
-    public class VersionInfo
+    public static class VersionInfo
     {
-        readonly public static int SettingsVer = 2;
     }
 
     public class MantisGlobalSettings : IModSettings
     {
-
+        readonly public static int SettingsVer = 2;
 
         public void Reset()
         {
@@ -23,24 +22,24 @@ namespace Mantis_Gods
 
 
             // floor color in json. defaults to invisible and black.
-            rainbowFloor = false;
+            RainbowFloor = false;
             // update every x frames
-            rainbowUpdateDelay = 6;
-            floorColorRed = 0.0f;
-            floorColorGreen = 0.0f;
-            floorColorBlue = 0.0f;
-            floorColorAlpha = 0.0f;
+            RainbowUpdateDelay = 6;
+            FloorColorRed = 0.0f;
+            FloorColorGreen = 0.0f;
+            FloorColorBlue = 0.0f;
+            FloorColorAlpha = 0.0f;
 
-            SettingsVersion = VersionInfo.SettingsVer;
+            SettingsVersion = SettingsVer;
         }
-        public int SettingsVersion { get => GetInt(); set => SetInt(value); }
 
-        public bool rainbowFloor { get => GetBool(); set => SetBool(value); }
-        public int rainbowUpdateDelay { get => GetInt(); set => SetInt(value); }
-        public float floorColorRed { get => GetFloat(); set => SetFloat(value); }
-        public float floorColorGreen { get => GetFloat(); set => SetFloat(value); }
-        public float floorColorBlue { get => GetFloat(); set => SetFloat(value); }
-        public float floorColorAlpha { get => GetFloat(); set => SetFloat(value); }
+        public int SettingsVersion { get => GetInt(); set => SetInt(value); }
+        public bool RainbowFloor { get => GetBool(); set => SetBool(value); }
+        public int RainbowUpdateDelay { get => GetInt(); set => SetInt(value); }
+        public float FloorColorRed { get => GetFloat(); set => SetFloat(value); }
+        public float FloorColorGreen { get => GetFloat(); set => SetFloat(value); }
+        public float FloorColorBlue { get => GetFloat(); set => SetFloat(value); }
+        public float FloorColorAlpha { get => GetFloat(); set => SetFloat(value); }
     }
 
 
