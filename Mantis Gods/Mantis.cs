@@ -1,6 +1,7 @@
 ﻿using HutongGames.PlayMaker.Actions;
 using Modding;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static FsmUtil.FsmUtil;
@@ -46,11 +47,10 @@ namespace Mantis_Gods
 
             if (arg0.name != "Fungus2_15_boss") return;
 
-            GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
-            //foreach (GameObject go in GetObjectsFromScene("Fungus2_15"))
-            foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
+            foreach(GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
-                // if (go.name != "Deep Spikes")
+                // TODO: Deep Spikes (x) -- use contains
+                if (go.name != "BossLoader")
                     Destroy(go);
             }
 
@@ -58,11 +58,12 @@ namespace Mantis_Gods
             spc.DisableParticles();
 
 
-            plane = new GameObject("Plane");
-
-            // make it able to be walked on 
-            plane.tag = "HeroWalkable";
-            plane.layer = 8;
+            plane = new GameObject("Plane")
+            {
+                // make it able to be walked on 
+                tag = "HeroWalkable",
+                layer = 8
+            };
 
             // Dimensions 
             MeshFilter meshFilter = (MeshFilter)plane.AddComponent(typeof(MeshFilter));
@@ -137,14 +138,11 @@ namespace Mantis_Gods
             lord.GetComponent<HealthManager>().hp *= 3;
 
             // Remove Idle.
-            Wait IdleAction = (Wait)GetAction(lordFSM, "Idle", 0);
-            IdleAction.time.Value = 0;
-            IdleAction = (Wait)GetAction(lordFSM, "Start Pause", 0);
-            IdleAction.time.Value = 0;
+            lordFSM.GetAction<Wait>("Idle", 0).time.Value = 0;
+            lordFSM.GetAction<Wait>("Start Pause", 0).time.Value = 0;
 
             // Speed up throwing
-            IdleAction = (Wait)GetAction(lordFSM, "Throw CD", 0);
-            IdleAction.time.Value /= 4;
+            lordFSM.GetAction<Wait>("Throw CD", 0).time.Value /= 4;
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
@@ -166,14 +164,24 @@ namespace Mantis_Gods
 
             // Repeat for wall throw
             lordAnim.GetClipByName("Wall Arrive").fps = 45;
+
             lordAnim.GetClipByName("Wall Leave 1").fps *= 1.3f;
+            Log(lordAnim.GetClipByName("Wall Leave 1").fps.ToString());
+
             lordAnim.GetClipByName("Wall Leave 2").fps *= 1.3f;
+            Log(lordAnim.GetClipByName("Wall Leave 2").fps.ToString());
+
             lordAnim.GetClipByName("Wall Ready").fps *= 2;
+            Log(lordAnim.GetClipByName("Wall Ready").fps.ToString());
+
             lordAnim.GetClipByName("Throw").fps = 55;
+
             lordAnim.GetClipByName("Throw Antic").fps *= 1.3f;
+            Log(lordAnim.GetClipByName("Throw Antic").fps.ToString());
 
             // Lance
             lordAnim.GetClipByName("Lance").fps *= 4;
+            Log(lordAnim.GetClipByName("Lance").fps.ToString());
 
             foreach(tk2dSpriteAnimationClip meme in lordAnim.Library.clips)
             {
