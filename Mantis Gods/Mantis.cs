@@ -1,6 +1,7 @@
 ﻿using HutongGames.PlayMaker.Actions;
 using Modding;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,6 +22,32 @@ namespace Mantis_Gods
         public int RainbowPos;
         public static int RainbowUpdateDelay;
         public int CurrentDelay;
+
+        public readonly Dictionary<String, float> FPSdict = new Dictionary<String, float>
+        {
+            ["Dash Arrive"] = 30,
+            ["Dash Antic"] = 35,
+            ["Dash Attack"] = 45,
+            ["Dash Recover"] = 45,
+            ["Dash Leave"] = 45,
+
+            // Repeat for down stab
+            ["Dstab Leave"] = 45,
+            ["Dstab Arrive"] = 34,
+            ["Dstab Attack"] = 34,
+            ["Dstab Land"] = 34,
+
+            // Repeat for wall throw
+            ["Wall Arrive"] = 45,
+            ["Wall Leave 1"] = 15.6f,
+            ["Wall Leave 2"] = 26,
+            ["Wall Ready"] = 24,
+            ["Throw"] = 55,
+            ["Throw Antic"] = 15.6f,
+
+            // Lance
+            ["Lance"] = 120,
+        };
 
         public void Start()
         {
@@ -47,6 +74,7 @@ namespace Mantis_Gods
 
             if (arg0.name != "Fungus2_15_boss") return;
 
+            GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
             foreach(GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
                 // TODO: Deep Spikes (x) -- use contains
@@ -146,46 +174,9 @@ namespace Mantis_Gods
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
-
-            // Increase fps for Dash recovery/arrival
-            // This makes them faster.
-            lordAnim.GetClipByName("Dash Arrive").fps = 30;
-            lordAnim.GetClipByName("Dash Antic").fps = 35;
-            lordAnim.GetClipByName("Dash Attack").fps = 45;
-            lordAnim.GetClipByName("Dash Recover").fps = 45;
-            lordAnim.GetClipByName("Dash Leave").fps = 45;
-
-            // Repeat for down stab
-            lordAnim.GetClipByName("Dstab Leave").fps = 45;
-            // 30
-            lordAnim.GetClipByName("Dstab Arrive").fps = 34;
-            lordAnim.GetClipByName("Dstab Attack").fps = 34;
-            lordAnim.GetClipByName("Dstab Land").fps = 34;
-
-            // Repeat for wall throw
-            lordAnim.GetClipByName("Wall Arrive").fps = 45;
-
-            lordAnim.GetClipByName("Wall Leave 1").fps *= 1.3f;
-            Log(lordAnim.GetClipByName("Wall Leave 1").fps.ToString());
-
-            lordAnim.GetClipByName("Wall Leave 2").fps *= 1.3f;
-            Log(lordAnim.GetClipByName("Wall Leave 2").fps.ToString());
-
-            lordAnim.GetClipByName("Wall Ready").fps *= 2;
-            Log(lordAnim.GetClipByName("Wall Ready").fps.ToString());
-
-            lordAnim.GetClipByName("Throw").fps = 55;
-
-            lordAnim.GetClipByName("Throw Antic").fps *= 1.3f;
-            Log(lordAnim.GetClipByName("Throw Antic").fps.ToString());
-
-            // Lance
-            lordAnim.GetClipByName("Lance").fps *= 4;
-            Log(lordAnim.GetClipByName("Lance").fps.ToString());
-
-            foreach(tk2dSpriteAnimationClip meme in lordAnim.Library.clips)
+            foreach(KeyValuePair<String,float> i in FPSdict)
             {
-                Log(meme.name);
+                lordAnim.GetClipByName(i.Key).fps = i.Value;
             }
 
             if (lord.name.Contains("S"))
