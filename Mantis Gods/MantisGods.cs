@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using Modding;
 using UnityEngine;
 using UObject = UnityEngine.Object;
@@ -12,7 +14,7 @@ namespace Mantis_Gods
 
         public override string GetVersion()
         {
-            return version;
+            return FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(MantisGods)).Location).FileVersion;
         }
 
         public override void Initialize()

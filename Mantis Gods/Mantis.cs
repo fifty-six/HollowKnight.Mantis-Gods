@@ -264,6 +264,7 @@ namespace Mantis_Gods
         public void OnDestroy()
         {
             USceneManager.sceneLoaded -= Reset;
+            ModHooks.Instance.LanguageGetHook -= LangGet;
         }
     }
 }
