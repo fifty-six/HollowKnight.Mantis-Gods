@@ -38,6 +38,7 @@ namespace Mantis_Gods
             if (GlobalSettings.rainbowFloor)
             {
                 Mantis.rainbowFloor = true;
+                Mantis.rainbowUpdateDelay = GlobalSettings.rainbowUpdateDelay;
             } else
             {
                 Mantis.floorColor = new Color(GlobalSettings.floorColorRed, GlobalSettings.floorColorGreen, GlobalSettings.floorColorBlue, GlobalSettings.floorColorAlpha);
