@@ -249,6 +249,7 @@ namespace Mantis_Gods
                     tex.SetPixel(0, 0, getNextRainbowColor());
                     tex.Apply();
                     plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
+                    currentDelay = 0;
                 }
             }
 
