@@ -18,13 +18,14 @@ namespace FsmUtil
             if( index < source.Length - 1 )
                 Array.Copy(source, index + 1, dest, index, source.Length - index - 1);
 
+
             return dest;
         }
 
         private static FieldInfo fsmStringParamsField;
         static FsmUtil()
         {
-            FieldInfo[] fieldInfo = typeof(HutongGames.PlayMaker.ActionData).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo[] fieldInfo = typeof(ActionData).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             for (int j = 0; j < fieldInfo.Length; j++)
             {
                 if (fieldInfo[j].Name == "fsmStringParams")
@@ -44,7 +45,7 @@ namespace FsmUtil
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
-                    Modding.ModHooks.ModLog("[FSM UTIL] " + actions[0].GetType().ToString());
+                    Log(actions[0].GetType().ToString());
 
                     actions.RemoveAt(index);
 
@@ -76,9 +77,26 @@ namespace FsmUtil
                     FsmStateAction[] actions = fsm.FsmStates[i].Actions;
 
                     Array.Resize(ref actions, actions.Length + 1);
-                    Modding.ModHooks.ModLog("[FSM UTIL] " + actions[index].GetType().ToString());
+                    Log(actions[index].GetType().ToString());
 
                     return actions[index];
+                }
+            }
+            return null;
+        }
+
+        public static T GetAction<T>(PlayMakerFSM fsm, string stateName, int index) where T: FsmStateAction
+        {
+            for (int i = 0; i < fsm.FsmStates.Length; i++)
+            {
+                if (fsm.FsmStates[i].Name == stateName)
+                {
+                    FsmStateAction[] actions = fsm.FsmStates[i].Actions;
+
+                    Array.Resize(ref actions, actions.Length + 1);
+                    Log(actions[index].GetType().ToString());
+
+                    return actions[index] as T;
                 }
             }
             return null;
@@ -132,7 +150,7 @@ namespace FsmUtil
                         }
                         else
                         {
-                            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Removing {0} transition from {1}", trans.ToState, fsm.FsmStates[i].Name));
+                            Log(string.Format("Removing {0} transition from {1}", trans.ToState, fsm.FsmStates[i].Name));
                         }
                     }
                     fsm.FsmStates[i].Transitions = transList.ToArray();
@@ -173,7 +191,7 @@ namespace FsmUtil
             }
         }
 
-        public static void ReplaceStringVariable(PlayMakerFSM fsm, string state, Dictionary<string, string> dict)
+        public static void ReplaceStringVariable(this PlayMakerFSM fsm, string state, Dictionary<string, string> dict)
         {
             for (int i = 0; i < fsm.FsmStates.Length; i++)
             {
@@ -206,24 +224,24 @@ namespace FsmUtil
             }
         }
 
-        public static void ReplaceStringVariable(PlayMakerFSM fsm, string state, string src, string dst)
+        public static void ReplaceStringVariable(this PlayMakerFSM fsm, string state, string src, string dst)
         {
-            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Replacing FSM Strings"));
+            Log(string.Format("Replacing FSM Strings"));
             for (int i = 0; i < fsm.FsmStates.Length; i++)
             {
                 bool found = false;
                 if (fsm.FsmStates[i].Name == state || state == "")
                 {
-                    Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmState with name \"{0}\" ", fsm.FsmStates[i].Name));
+                    Log(string.Format("Found FsmState with name \"{0}\" ", fsm.FsmStates[i].Name));
                     foreach (FsmString str in (List<FsmString>)fsmStringParamsField.GetValue(fsm.FsmStates[i].ActionData))
                     {
                         List<FsmString> val = new List<FsmString>();
-                        Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmString with value \"{0}\" ", str));
+                        Log(string.Format("Found FsmString with value \"{0}\" ", str));
                         if (str.Value.Contains(src))
                         {
                             val.Add(dst);
                             found = true;
-                            Modding.ModHooks.ModLog(string.Format("[FSM UTIL] Found FsmString with value \"{0}\", changing to \"{1}\" ", str, dst));
+                            Log(string.Format("Found FsmString with value \"{0}\", changing to \"{1}\" ", str, dst));
                         }
                         else
                         {
@@ -242,5 +260,14 @@ namespace FsmUtil
                 }
             }
         }
+
+        public static void Log(String str)
+        {
+            Modding.Logger.Log("[FSM UTIL]: " + str);
+        }
+
+        ////////////////
+        // Extensions //
+        ////////////////
     }
 }

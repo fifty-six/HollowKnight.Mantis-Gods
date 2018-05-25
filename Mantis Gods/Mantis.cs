@@ -10,6 +10,7 @@ using HutongGames.PlayMaker.Actions;
 using static FsmUtil.FsmUtil;
 using System.Reflection;
 using System.Collections;
+using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace Mantis_Gods
 {
@@ -17,11 +18,10 @@ namespace Mantis_Gods
     {
         public GameObject MantisBattle;
         public GameObject lord2, lord3, lord1, shot;
-        public GameObject fireball;
 
         public void Start()
         {
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded += Reset;
+            USceneManager.sceneLoaded += Reset;
             ModHooks.Instance.LanguageGetHook += LangGet;
         }
 
@@ -42,21 +42,19 @@ namespace Mantis_Gods
             if (PlayerData.instance.defeatedMantisLords)
                 PlayerData.instance.defeatedMantisLords = false;
 
-            if (arg0.name == "Fungus2_15")
-            {
-                // GameManager.instance.LoadScene("Fungus2_15_boss");
-            }
-
             if (arg0.name != "Fungus2_15_boss") return;
 
-            foreach (GameObject go in GetObjectsFromScene("Fungus2_15"))
+            //foreach (GameObject go in GetObjectsFromScene("Fungus2_15"))
+            foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
                 // if (go.name != "Deep Spikes")
                     Destroy(go);
             }
 
-            SceneParticlesController spc = GameObject.FindObjectOfType<SceneParticlesController>();
+            Log("hi  hello");
+            SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();
             spc.DisableParticles();
+            Log("hi  hello a");
 
 
             GameObject plane = new GameObject("Plane");
@@ -102,7 +100,7 @@ namespace Mantis_Gods
             {
                 new Vector2 (0, 0),
                 new Vector2 (0, 1),
-                new Vector2(1, 1),
+                new Vector2 (1, 1),
                 new Vector2 (1, 0)
             };
             m.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
@@ -110,58 +108,56 @@ namespace Mantis_Gods
             return m;
         }
 
-        public static List<GameObject> GetObjectsFromScene(string sceneName)
-        {
-            List<GameObject> list = new List<GameObject>();
-            GameObject[] rootGameObjects = UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName).GetRootGameObjects();
-            if (rootGameObjects != null && rootGameObjects.Length != 0 && rootGameObjects != null && rootGameObjects.Length != 0)
-            {
-                list.AddRange(rootGameObjects);
-                for (int i = 0; i < rootGameObjects.Length; i++)
-                {
-                    List<Transform> list2 = new List<Transform>();
-                    foreach (object obj in rootGameObjects[i].transform)
-                    {
-                        Transform transform = (Transform)obj;
-                        list.Add(transform.gameObject);
-                        list2.Add(transform);
-                    }
-                    for (int j = 0; j < list2.Count; j++)
-                    {
-                        if (list2[j].childCount > 0)
-                        {
-                            foreach (object obj2 in list2[j])
-                            {
-                                Transform transform2 = (Transform)obj2;
-                                list.Add(transform2.gameObject);
-                                list2.Add(transform2);
-                            }
-                        }
-                    }
-                }
-            }
-            return list;
-        }
+        //public static List<GameObject> GetObjectsFromScene(string sceneName)
+        //{
+        //    List<GameObject> list = new List<GameObject>();
+        //    GameObject[] rootGameObjects = UnityEngine.SceneManagement.SceneManager.GetSceneByName(sceneName).GetRootGameObjects();
+        //    if (rootGameObjects != null && rootGameObjects.Length != 0 && rootGameObjects != null && rootGameObjects.Length != 0)
+        //    {
+        //        list.AddRange(rootGameObjects);
+        //        for (int i = 0; i < rootGameObjects.Length; i++)
+        //        {
+        //            List<Transform> list2 = new List<Transform>();
+        //            foreach (object obj in rootGameObjects[i].transform)
+        //            {
+        //                Transform transform = (Transform)obj;
+        //                list.Add(transform.gameObject);
+        //                list2.Add(transform);
+        //            }
+        //            for (int j = 0; j < list2.Count; j++)
+        //            {
+        //                if (list2[j].childCount > 0)
+        //                {
+        //                    foreach (object obj2 in list2[j])
+        //                    {
+        //                        Transform transform2 = (Transform)obj2;
+        //                        list.Add(transform2.gameObject);
+        //                        list2.Add(transform2);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return list;
+        //}
 
         public void UpdateLord(GameObject lord)
         {
+            if (lord == null) return;
+
             Log("Got Lord: " + lord.name);
 
             // get control fsm for lord
-            PlayMakerFSM lordFSM = FSMUtility.LocateFSM(lord, "Mantis Lord");
-            DamageHero damageHero = lord.GetComponent<DamageHero>();
-            damageHero.damageDealt *= 2;
-            foreach (Transform transform in lord.GetComponents<Transform>())
-            {
-                if (transform.name == "Dash Hit")
-                {
-                    transform.GetComponent<DamageHero>().damageDealt *= 2;
-                }
-            }
+            PlayMakerFSM lordFSM = lord.LocateMyFSM("Mantis Lord");
 
 
-            HealthManager lordHM = lord.GetComponent<HealthManager>();
-            lordHM.hp *= 3;
+            lord.GetComponent<DamageHero>().damageDealt *= 2;
+
+            lord.FindTransformInChildren("Dash Hit")
+                .GetComponent<DamageHero>()
+                .damageDealt *= 2;
+
+            lord.GetComponent<HealthManager>().hp *= 3;
 
             // Remove Idle.
             Wait IdleAction = (Wait)GetAction(lordFSM, "Idle", 0);
@@ -217,7 +213,7 @@ namespace Mantis_Gods
 
         public void UpdatePhase2(PlayMakerFSM lordFSM)
         {
-            SendRandomEventV3 rand = (SendRandomEventV3)GetAction(lordFSM, "Attack Choice", 5);
+            SendRandomEventV3 rand = lordFSM.GetAction<SendRandomEventV3>("Attack Choice", 5);
 
             // DASH, DSTAB, THROW
             // 1, 1, 1 => 1/6
@@ -233,30 +229,6 @@ namespace Mantis_Gods
             //    shotFSM.FsmVariables.FindFsmFloat("X Velocity").Value *= 2;
 
             //GameObject pls = GameObject.Find("Challenge Prompt");
-            //if (pls != null && !finnawhat)
-            //{
-            //    Log("FUCKING HORRAY");
-            //    Log(pls.name);
-            //    foreach (PlayMakerFSM fsm in pls.GetComponents<PlayMakerFSM>())
-            //    {
-            //        Log("FSM: " + fsm.name);
-            //        foreach (FsmState fsmState in fsm.FsmStates)
-            //        {
-            //            Log(fsmState.Name);
-            //        }
-            //    }
-            //    foreach (PlayMakerFSM fsm in pls.GetComponentsInChildren<PlayMakerFSM>())
-            //    {
-            //        Log("FSM Child: " + fsm.name);
-            //    }
-            //    finnawhat = true;
-            //    if (FSMUtility.LocateFSM(pls, "FSM") != null)
-            //    {
-            //        Log("what");
-            //    }
-            //    if (FSMUtility.ContainsFSM(pls, "FSM"))
-            //        Log("yeet");
-            //}
             if (lord1 != null && lord2 != null && lord3 != null) return;
 
             if (MantisBattle == null)
@@ -291,7 +263,7 @@ namespace Mantis_Gods
 
         public void OnDestroy()
         {
-            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= Reset;
+            USceneManager.sceneLoaded -= Reset;
         }
     }
 }

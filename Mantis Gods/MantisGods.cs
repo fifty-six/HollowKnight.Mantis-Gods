@@ -65,5 +65,18 @@ namespace Mantis_Gods
             }
             return null;
         }
+
+        public static Transform FindTransformInChildren(this GameObject gameObject, string name)
+        {
+            if (gameObject == null)
+                return null;
+
+            foreach (var t in gameObject.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == name)
+                    return t;
+            }
+            return null;
+        }
     }
 }
