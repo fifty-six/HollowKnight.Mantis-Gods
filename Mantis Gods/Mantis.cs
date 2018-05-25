@@ -75,6 +75,7 @@ namespace Mantis_Gods
             if (arg0.name != "Fungus2_15_boss") return;
 
             GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
+            PlayerData.instance.dreamReturnScene = "Fungus2_13";
             foreach(GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
                 // TODO: Deep Spikes (x) -- use contains
@@ -262,17 +263,19 @@ namespace Mantis_Gods
             if (realCyclePos < 256)
             {
                 c.b = 0;
-                c.r = (float) (((256 - realCyclePos))/(256.0));
-                c.g = (float) (realCyclePos / 256.0);
-            } else if (realCyclePos < 512)
+                c.r = (256 - realCyclePos) / (256f);
+                c.g = realCyclePos / 256f;
+            }
+            else if (realCyclePos < 512)
             {
-                c.b = (float)( (realCyclePos - 256) / 256.0);
+                c.b = (realCyclePos - 256) / 256f;
                 c.r = 0;
-                c.g = (float)(((512 - realCyclePos)) / (256.0));
-            } else
+                c.g = (512 - realCyclePos) / (256f);
+            }
+            else
             {
-                c.b = (float)(((768 - realCyclePos)) / (256.0));
-                c.r = (float)((realCyclePos - 512) / 256.0);
+                c.b = (768 - realCyclePos) / 256f;
+                c.r = (realCyclePos - 512) / 256f;
                 c.g = 0;
             }
 
