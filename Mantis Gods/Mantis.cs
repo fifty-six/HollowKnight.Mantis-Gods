@@ -86,7 +86,6 @@ namespace Mantis_Gods
             SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();
             spc.DisableParticles();
 
-
             plane = new GameObject("Plane")
             {
                 // make it able to be walked on 
@@ -105,7 +104,7 @@ namespace Mantis_Gods
             {
                 System.Random rand = new System.Random();
                 RainbowPos = rand.Next(0, 767);
-                FloorColor = getNextRainbowColor();
+                FloorColor = GetNextRainbowColor();
                 CurrentDelay = 0;
             }
 
@@ -127,23 +126,25 @@ namespace Mantis_Gods
 
         public Mesh CreateMesh(float width, float height)
         {
-            Mesh m = new Mesh();
-            m.name = "ScriptedMesh";
-            m.vertices = new Vector3[]
+            Mesh m = new Mesh
             {
-                new Vector3(-width, -height, 0.01f),
-                new Vector3(width, -height, 0.01f),
-                new Vector3(width, height, 0.01f),
-                new Vector3(-width, height, 0.01f)
+                name = "ScriptedMesh",
+                vertices = new Vector3[]
+                {
+                    new Vector3(-width, -height, 0.01f),
+                    new Vector3(width, -height, 0.01f),
+                    new Vector3(width, height, 0.01f),
+                    new Vector3(-width, height, 0.01f)
+                },
+                uv = new Vector2[]
+                {
+                    new Vector2 (0, 0),
+                    new Vector2 (0, 1),
+                    new Vector2 (1, 1),
+                    new Vector2 (1, 0)
+                },
+                triangles = new int[] { 0, 1, 2, 0, 2, 3 }
             };
-            m.uv = new Vector2[]
-            {
-                new Vector2 (0, 0),
-                new Vector2 (0, 1),
-                new Vector2 (1, 1),
-                new Vector2 (1, 0)
-            };
-            m.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
             m.RecalculateNormals();
             return m;
         }
@@ -156,7 +157,6 @@ namespace Mantis_Gods
 
             // get control fsm for lord
             PlayMakerFSM lordFSM = lord.LocateMyFSM("Mantis Lord");
-
 
             lord.GetComponent<DamageHero>().damageDealt *= 2;
 
@@ -206,13 +206,12 @@ namespace Mantis_Gods
                 if (CurrentDelay >= RainbowUpdateDelay)
                 {
                     Texture2D tex = new Texture2D(1, 1);
-                    tex.SetPixel(0, 0, getNextRainbowColor());
+                    tex.SetPixel(0, 0, GetNextRainbowColor());
                     tex.Apply();
                     plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
                     CurrentDelay = 0;
                 }
             }
-
 
             //Shot = GameObject.Find("Shot Mantis Lord");
             //PlayMakerFSM shotFSM = Shot?.LocateMyFSM("Control");
@@ -247,13 +246,7 @@ namespace Mantis_Gods
             UpdateLord(Lord3);
         }
 
-        public void rainbowFloorColorGen()
-        {
-
-
-        }
-
-        public Color getNextRainbowColor()
+        public Color GetNextRainbowColor()
         {
             Color c = new Color();
             // the cycle repeats every 768
@@ -282,7 +275,6 @@ namespace Mantis_Gods
             RainbowPos++;
             return c;
         }
-
 
         public void Log(String str)
         {
