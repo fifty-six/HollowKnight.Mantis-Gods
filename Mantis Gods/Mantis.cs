@@ -14,7 +14,7 @@ namespace Mantis_Gods
     internal class Mantis : MonoBehaviour
     {
         public GameObject MantisBattle;
-        public GameObject lord2, lord3, lord1, shot;
+        public GameObject Lord2, Lord3, Lord1, Shot;
         public GameObject plane;
 
         public static bool RainbowFloor;
@@ -214,37 +214,37 @@ namespace Mantis_Gods
             }
 
 
-            //shot = GameObject.Find("Shot Mantis Lord");
-            //PlayMakerFSM shotFSM = shot?.LocateMyFSM("Control");
+            //Shot = GameObject.Find("Shot Mantis Lord");
+            //PlayMakerFSM shotFSM = Shot?.LocateMyFSM("Control");
             //if (shotFSM != null)
             //    shotFSM.FsmVariables.FindFsmFloat("X Velocity").Value *= 2;
 
             //GameObject pls = GameObject.Find("Challenge Prompt");
-            if (lord1 != null && lord2 != null && lord3 != null) return;
+            if (Lord1 != null && Lord2 != null && Lord3 != null) return;
 
             if (MantisBattle == null)
             {
                 MantisBattle = GameObject.Find("Mantis Battle");
             }
 
-            if (lord1 == null)
+            if (Lord1 == null)
             {
-                lord1 = GameObject.Find("Mantis Lord") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord");
-                if (lord1 != null)
+                Lord1 = GameObject.Find("Mantis Lord") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord");
+                if (Lord1 != null)
                 {
-                    UpdateLord(lord1);
+                    UpdateLord(Lord1);
                 }
             }
 
-            if (lord3 != null && lord2 != null) return;
+            if (Lord3 != null && Lord2 != null) return;
 
-            lord2 = GameObject.Find("Mantis Lord S1") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S1");
-            lord3 = GameObject.Find("Mantis Lord S2") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S2");
+            Lord2 = GameObject.Find("Mantis Lord S1") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S1");
+            Lord3 = GameObject.Find("Mantis Lord S2") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S2");
 
-            if (lord2 == null || lord3 == null) return;
+            if (Lord2 == null || Lord3 == null) return;
 
-            UpdateLord(lord2);
-            UpdateLord(lord3);
+            UpdateLord(Lord2);
+            UpdateLord(Lord3);
         }
 
         public void rainbowFloorColorGen()
