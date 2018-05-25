@@ -8,6 +8,7 @@ using Modding;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using static FsmUtil.FsmUtil;
+using static FsmUtil.FsmutilExt;
 using System.Reflection;
 using System.Collections;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
