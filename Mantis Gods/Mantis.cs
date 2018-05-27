@@ -30,14 +30,13 @@ namespace Mantis_Gods
             ["Dash Attack"] = 45,
             ["Dash Recover"] = 45,
             ["Dash Leave"] = 45,
+            ["Lance"] = 120,
 
-            // Repeat for down stab
             ["Dstab Leave"] = 45,
             ["Dstab Arrive"] = 34,
             ["Dstab Attack"] = 34,
             ["Dstab Land"] = 34,
 
-            // Repeat for wall throw
             ["Wall Arrive"] = 45,
             ["Wall Leave 1"] = 15.6f,
             ["Wall Leave 2"] = 26,
@@ -45,14 +44,13 @@ namespace Mantis_Gods
             ["Throw"] = 55,
             ["Throw Antic"] = 15.6f,
 
-            // Lance
-            ["Lance"] = 120,
         };
 
         public void Start()
         {
             USceneManager.sceneLoaded += Reset;
             ModHooks.Instance.LanguageGetHook += LangGet;
+
         }
 
         // Used to override the text for Mantis Lords
@@ -78,10 +76,12 @@ namespace Mantis_Gods
             PlayerData.instance.dreamReturnScene = "Fungus2_13";
             foreach(GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
-                // TODO: Deep Spikes (x) -- use contains
-                if (go.name != "BossLoader")
-                    Destroy(go);
+                if (go.name == "BossLoader") continue;
+                Destroy(go);
             }
+
+            Destroy(GameObject.Find("Mantis Battle/mantis_lord_opening_floors"));
+            Destroy(GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)"));
 
             SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();
             spc.DisableParticles();
@@ -94,7 +94,7 @@ namespace Mantis_Gods
             };
 
             // Dimensions 
-            MeshFilter meshFilter = (MeshFilter)plane.AddComponent(typeof(MeshFilter));
+            MeshFilter meshFilter = plane.AddComponent<MeshFilter>();
             meshFilter.mesh = CreateMesh(200, 6.03f);
             MeshRenderer renderer = plane.AddComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("Particles/Additive");
@@ -124,7 +124,7 @@ namespace Mantis_Gods
             plane.SetActive(true);
         }
 
-        public Mesh CreateMesh(float width, float height)
+        private Mesh CreateMesh(float width, float height)
         {
             Mesh m = new Mesh
             {
@@ -229,18 +229,13 @@ namespace Mantis_Gods
             if (Lord1 == null)
             {
                 Lord1 = GameObject.Find("Mantis Lord") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord");
-                if (Lord1 != null)
-                {
-                    UpdateLord(Lord1);
-                }
+                UpdateLord(Lord1);
             }
 
             if (Lord3 != null && Lord2 != null) return;
 
             Lord2 = GameObject.Find("Mantis Lord S1") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S1");
             Lord3 = GameObject.Find("Mantis Lord S2") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S2");
-
-            if (Lord2 == null || Lord3 == null) return;
 
             UpdateLord(Lord2);
             UpdateLord(Lord3);
