@@ -6,11 +6,14 @@ using System.IO;
 using Modding;
 using UnityEngine;
 using UObject = UnityEngine.Object;
+using UnityEngine.SceneManagement;
 
 namespace Mantis_Gods
 {
     public class MantisGods : Mod<MantisSettings, MantisGlobalSettings>, ITogglableMod
     {
+        public static MantisSettings SettingsInstance;
+
         public override string GetVersion()
         {
             return FileVersionInfo.GetVersionInfo(Assembly.GetAssembly(typeof(MantisGods)).Location).FileVersion;
@@ -21,12 +24,23 @@ namespace Mantis_Gods
             Log("Initializing.");
             ModHooks.Instance.AfterSavegameLoadHook += AddComponent;
             ModHooks.Instance.NewGameHook += NewGame;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ResetModSaveData;
 
             // in game
             if (HeroController.instance != null && GameManager.instance.gameObject.GetComponent<Mantis>() == null)
             {
                 GameManager.instance.gameObject.AddComponent<Mantis>();
             }
+        }
+
+        // bug in modding api
+        private void ResetModSaveData(Scene arg0, Scene arg1)
+        {
+            if (arg1.name == "Menu_Title")
+            {
+                Settings.DefeatedGods = false;
+            }
+
         }
 
         private void NewGame()
@@ -42,6 +56,7 @@ namespace Mantis_Gods
                 Mantis.FloorColor = new Color(GlobalSettings.FloorColorRed, GlobalSettings.FloorColorGreen, GlobalSettings.FloorColorBlue, GlobalSettings.FloorColorAlpha);
             }
 
+            SettingsInstance = Settings;
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }
 

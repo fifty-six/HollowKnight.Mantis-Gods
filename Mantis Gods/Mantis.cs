@@ -50,14 +50,36 @@ namespace Mantis_Gods
         {
             USceneManager.sceneLoaded += Reset;
             ModHooks.Instance.LanguageGetHook += LangGet;
+            ModHooks.Instance.GetPlayerBoolHook += GetBool;
+            ModHooks.Instance.SetPlayerBoolHook += SetBool;
+        }
 
+        private void SetBool(string originalSet, bool value)
+        {
+            if (originalSet == "defeatedMantisLords" && PlayerData.instance.defeatedMantisLords && value)
+            {
+                Log("Defeated gods");
+                MantisGods.SettingsInstance.DefeatedGods = true;
+                Log("bool set");
+            }
+            PlayerData.instance.SetBoolInternal(originalSet, value);
+        }
+
+        private bool GetBool(string originalSet)
+        {
+            if (originalSet == "defeatedMantisLords"
+                && PlayerData.instance.defeatedMantisLords
+                && !MantisGods.SettingsInstance.DefeatedGods
+                && HeroController.instance.hero_state == GlobalEnums.ActorStates.no_input)
+                return false;
+            return PlayerData.instance.GetBoolInternal(originalSet);
         }
 
         // Used to override the text for Mantis Lords
         // Mantis Lords => Mantis Gods
         private string LangGet(string key, string sheetTitle)
         {
-            if (key == "MANTIS_LORDS_MAIN")
+            if (key == "MANTIS_LORDS_MAIN" && PlayerData.instance.defeatedMantisLords)
                 return "Gods";
             else
                 return Language.Language.GetInternal(key, sheetTitle);
@@ -66,11 +88,9 @@ namespace Mantis_Gods
         private void Reset(Scene arg0, LoadSceneMode arg1)
         {
             Log("Reset scene: " + arg0.name);
-
-            if (PlayerData.instance.defeatedMantisLords)
-                PlayerData.instance.defeatedMantisLords = false;
-
+            // if (!MantisGods.SettingsInstance.DefeatedGods)
             if (arg0.name != "Fungus2_15_boss") return;
+            if (!PlayerData.instance.defeatedMantisLords) return;
 
             GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
             PlayerData.instance.dreamReturnScene = "Fungus2_13";
@@ -219,6 +239,7 @@ namespace Mantis_Gods
             //    shotFSM.FsmVariables.FindFsmFloat("X Velocity").Value *= 2;
 
             //GameObject pls = GameObject.Find("Challenge Prompt");
+            if (!PlayerData.instance.defeatedMantisLords) return;
             if (Lord1 != null && Lord2 != null && Lord3 != null) return;
 
             if (MantisBattle == null)

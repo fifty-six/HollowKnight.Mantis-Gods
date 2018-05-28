@@ -42,13 +42,9 @@ namespace Mantis_Gods
         public float FloorColorAlpha { get => GetFloat(); set => SetFloat(value); }
     }
 
-
     public class MantisSettings : IModSettings
     {
-        // none needed but this class is
-
+        public bool DefeatedGods { get => GetBool(); set => SetBool(value); }
     }
-
-
 
 }
