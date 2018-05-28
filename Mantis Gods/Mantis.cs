@@ -1,6 +1,8 @@
-﻿using HutongGames.PlayMaker.Actions;
+﻿using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 using Modding;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -61,6 +63,7 @@ namespace Mantis_Gods
                 Log("Defeated gods");
                 MantisGods.SettingsInstance.DefeatedGods = true;
                 Log("bool set");
+                StartCoroutine(BattleBeat());
             }
             PlayerData.instance.SetBoolInternal(originalSet, value);
         }
@@ -88,6 +91,7 @@ namespace Mantis_Gods
         private void Reset(Scene arg0, LoadSceneMode arg1)
         {
             Log("Reset scene: " + arg0.name);
+            Log(GameManager.instance.entryGateName);
             // if (!MantisGods.SettingsInstance.DefeatedGods)
             if (arg0.name != "Fungus2_15_boss") return;
             if (!PlayerData.instance.defeatedMantisLords) return;
@@ -216,6 +220,31 @@ namespace Mantis_Gods
             // 1, 1, 1 => 1/6
             rand.weights[2].Value /= 10f;
             Log("Updated Phase 2 Lord: " + lordFSM.name);
+        }
+
+        public IEnumerator BattleBeat()
+        {
+            Log("Started Battle Beat Coroutine");
+            yield return new WaitForSeconds(13);
+            Destroy(plane);
+            yield return new WaitForSeconds(8);
+            GameManager.instance.entryGateName = "bot3";
+            try
+            {
+                GameManager.instance.GetType().GetField("entryDelay").SetValue(GameManager.instance, 1f);
+                GameManager.instance.GetType().GetField("targetScene").SetValue(GameManager.instance, "Fungus2_14");
+            }
+            catch {}
+            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+            {
+                AlwaysUnloadUnusedAssets = true,
+                EntryGateName = "bot3",
+                PreventCameraFadeOut = false,
+                SceneName = "Fungus2_14",
+                Visualization = GameManager.SceneLoadVisualizations.Dream
+
+            });
+            Log("Finished Coroutine");
         }
 
         public void Update()
