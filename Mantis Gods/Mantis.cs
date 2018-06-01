@@ -1,13 +1,10 @@
-﻿using HutongGames.PlayMaker;
-using HutongGames.PlayMaker.Actions;
+﻿using HutongGames.PlayMaker.Actions;
 using Modding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static FsmUtil.FsmUtil;
 using static FsmUtil.FsmutilExt;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -45,7 +42,6 @@ namespace Mantis_Gods
             ["Wall Ready"] = 24,
             ["Throw"] = 55,
             ["Throw Antic"] = 15.6f,
-
         };
 
         public void Start()
@@ -98,7 +94,7 @@ namespace Mantis_Gods
 
             GameManager.instance.sm.mapZone = GlobalEnums.MapZone.WHITE_PALACE;
             PlayerData.instance.dreamReturnScene = "Fungus2_13";
-            foreach(GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
+            foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
                 if (go.name == "BossLoader") continue;
                 Destroy(go);
@@ -112,12 +108,12 @@ namespace Mantis_Gods
 
             plane = new GameObject("Plane")
             {
-                // make it able to be walked on 
+                // make it able to be walked on
                 tag = "HeroWalkable",
                 layer = 8
             };
 
-            // Dimensions 
+            // Dimensions
             MeshFilter meshFilter = plane.AddComponent<MeshFilter>();
             meshFilter.mesh = CreateMesh(200, 6.03f);
             MeshRenderer renderer = plane.AddComponent<MeshRenderer>();
@@ -199,7 +195,7 @@ namespace Mantis_Gods
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
-            foreach(KeyValuePair<String,float> i in FPSdict)
+            foreach (KeyValuePair<String, float> i in FPSdict)
             {
                 lordAnim.GetClipByName(i.Key).fps = i.Value;
             }
@@ -234,7 +230,7 @@ namespace Mantis_Gods
                 GameManager.instance.GetType().GetField("entryDelay").SetValue(GameManager.instance, 1f);
                 GameManager.instance.GetType().GetField("targetScene").SetValue(GameManager.instance, "Fungus2_14");
             }
-            catch {}
+            catch { }
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
                 AlwaysUnloadUnusedAssets = true,
@@ -242,14 +238,13 @@ namespace Mantis_Gods
                 PreventCameraFadeOut = false,
                 SceneName = "Fungus2_14",
                 Visualization = GameManager.SceneLoadVisualizations.Dream
-
             });
             Log("Finished Coroutine");
         }
 
         public void Update()
         {
-            if (RainbowFloor)
+            if (RainbowFloor && plane != null)
             {
                 CurrentDelay++;
                 if (CurrentDelay >= RainbowUpdateDelay)

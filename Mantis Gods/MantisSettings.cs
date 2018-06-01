@@ -20,7 +20,6 @@ namespace Mantis_Gods
             //infiniteGrimmIntegration = true;
             // just kidding...
 
-
             // floor color in json. defaults to invisible and black.
             RainbowFloor = false;
             // update every x frames
@@ -46,5 +45,4 @@ namespace Mantis_Gods
     {
         public bool DefeatedGods { get => GetBool(); set => SetBool(value); }
     }
-
 }

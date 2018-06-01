@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using HutongGames.PlayMaker;
-using System.Reflection;
+﻿using HutongGames.PlayMaker;
 using System;
-using System.Linq;
-using System.Text;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace FsmUtil
 {
-    static class FsmUtil
+    internal static class FsmUtil
     {
         public static T[] RemoveAt<T>(this T[] source, int index)
         {
@@ -18,11 +16,11 @@ namespace FsmUtil
             if (index < source.Length - 1)
                 Array.Copy(source, index + 1, dest, index, source.Length - index - 1);
 
-
             return dest;
         }
 
         private static FieldInfo fsmStringParamsField;
+
         static FsmUtil()
         {
             FieldInfo[] fieldInfo = typeof(ActionData).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -265,13 +263,13 @@ namespace FsmUtil
         {
             Modding.Logger.Log("[FSM UTIL]: " + str);
         }
-
     }
-        ////////////////
-        // Extensions //
-        ////////////////
 
-     public static class FsmutilExt
+    ////////////////
+    // Extensions //
+    ////////////////
+
+    public static class FsmutilExt
     {
         public static void RemoveAction(this PlayMakerFSM fsm, string stateName, int index) => FsmUtil.RemoveAction(fsm, stateName, index);
 

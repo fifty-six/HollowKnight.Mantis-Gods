@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Modding;
 using System.Diagnostics;
-using System.Reflection;
 using System.IO;
-using Modding;
+using System.Reflection;
 using UnityEngine;
-using UObject = UnityEngine.Object;
 using UnityEngine.SceneManagement;
+using UObject = UnityEngine.Object;
 
 namespace Mantis_Gods
 {
@@ -40,7 +38,6 @@ namespace Mantis_Gods
             {
                 Settings.DefeatedGods = false;
             }
-
         }
 
         private void NewGame()
@@ -51,7 +48,8 @@ namespace Mantis_Gods
             {
                 Mantis.RainbowFloor = true;
                 Mantis.RainbowUpdateDelay = GlobalSettings.RainbowUpdateDelay;
-            } else
+            }
+            else
             {
                 Mantis.FloorColor = new Color(GlobalSettings.FloorColorRed, GlobalSettings.FloorColorGreen, GlobalSettings.FloorColorBlue, GlobalSettings.FloorColorAlpha);
             }
