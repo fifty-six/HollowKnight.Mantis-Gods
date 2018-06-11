@@ -54,14 +54,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KDT\FsmUtil.cs" />
+    <Compile Include="FsmUtil.cs" />
     <Compile Include="Mantis.cs" />
     <Compile Include="MantisGods.cs" />
     <Compile Include="MantisSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="KDT\TextFile1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

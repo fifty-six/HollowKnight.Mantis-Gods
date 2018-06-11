@@ -1,6 +1,7 @@
 ﻿using Modding;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -67,11 +68,11 @@ namespace Mantis_Gods
         {
             string settingsFilePath = Application.persistentDataPath + ModHooks.PathSeperator + GetType().Name + ".GlobalSettings.json";
 
-            bool forceReloadGlobalSettings = (GlobalSettings != null && GlobalSettings.SettingsVersion != MantisGlobalSettings.SettingsVer);
+            bool forceReloadGlobalSettings = GlobalSettings != null && GlobalSettings.SettingsVersion != MantisGlobalSettings.SettingsVer;
 
             if (forceReloadGlobalSettings || !File.Exists(settingsFilePath))
             {
-                GlobalSettings.Reset();
+                GlobalSettings?.Reset();
             }
 
             SaveGlobalSettings();
@@ -92,30 +93,14 @@ namespace Mantis_Gods
 
     public static class Extensions
     {
-        public static GameObject FindGameObjectInChildren(this GameObject gameObject, string name)
-        {
-            if (gameObject == null)
-                return null;
+        public static GameObject FindGameObjectInChildren(this GameObject gameObject, string name) => gameObject == null
+            ? null
+            : (from t in gameObject.GetComponentsInChildren<Transform>(true)
+                where t.name == name
+                select t.gameObject).FirstOrDefault();
 
-            foreach (var t in gameObject.GetComponentsInChildren<Transform>(true))
-            {
-                if (t.name == name)
-                    return t.gameObject;
-            }
-            return null;
-        }
-
-        public static Transform FindTransformInChildren(this GameObject gameObject, string name)
-        {
-            if (gameObject == null)
-                return null;
-
-            foreach (var t in gameObject.GetComponentsInChildren<Transform>(true))
-            {
-                if (t.name == name)
-                    return t;
-            }
-            return null;
-        }
+        public static Transform FindTransformInChildren(this GameObject gameObject, string name) => gameObject == null
+            ? null
+            : gameObject.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == name);
     }
 }

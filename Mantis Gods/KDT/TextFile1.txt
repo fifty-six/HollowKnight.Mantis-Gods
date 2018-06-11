@@ -1,1 +1,0 @@
-﻿Taken + Modified from https://raw.githubusercontent.com/KayDeeTee/HK-NGG/master/src/
