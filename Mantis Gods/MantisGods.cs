@@ -21,8 +21,8 @@ namespace Mantis_Gods
         public override void Initialize()
         {
             Log("Initializing.");
-            ModHooks.Instance.AfterSavegameLoadHook += AddComponent;
-            ModHooks.Instance.NewGameHook += NewGame;
+            ModHooks.Instance.AfterSavegameLoadHook += AfterSavegameLoad;
+            ModHooks.Instance.NewGameHook += AddComponent;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ResetModSaveData;
 
             // in game
@@ -41,7 +41,7 @@ namespace Mantis_Gods
             }
         }
 
-        private void NewGame()
+        private void AddComponent()
         {
             SetupSettings();
 
@@ -59,10 +59,7 @@ namespace Mantis_Gods
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }
 
-        private void AddComponent(SaveGameData data)
-        {
-            NewGame();
-        }
+        private void AfterSavegameLoad(SaveGameData data) => AddComponent();
 
         private void SetupSettings()
         {
@@ -80,8 +77,8 @@ namespace Mantis_Gods
 
         public void Unload()
         {
-            ModHooks.Instance.AfterSavegameLoadHook -= AddComponent;
-            ModHooks.Instance.NewGameHook -= NewGame;
+            ModHooks.Instance.AfterSavegameLoadHook -= AfterSavegameLoad;
+            ModHooks.Instance.NewGameHook -= AddComponent;
 
             // in game
             if (GameManager.instance != null)
