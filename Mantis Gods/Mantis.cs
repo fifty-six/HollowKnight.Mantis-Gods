@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using GlobalEnums;
 using HutongGames.PlayMaker;
+using ModCommon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Mantis_Gods.FsmutilExt;
@@ -148,18 +149,6 @@ namespace Mantis_Gods
                 }
             }
 
-            if (Shot == null)
-            {
-                Shot = GameObject.Find("Shot Mantis Lord");
-                // ReSharper disable once Unity.NoNullPropogation
-                PlayMakerFSM shotFsm = Shot?.LocateMyFSM("Control");
-                if (shotFsm != null && Shot != null)
-                {
-                    shotFsm.FsmVariables.FindFsmFloat("X Velocity").Value *= 10;
-                    Log("Changed shot x velocity");
-                }
-            }
-
             if (!PlayerData.instance.defeatedMantisLords) return;
             if (Lord1 != null && Lord2 != null && Lord3 != null) return;
 
@@ -168,24 +157,24 @@ namespace Mantis_Gods
                 MantisBattle = GameObject.Find("Mantis Battle");
             }
 
-            if (BattleSub == null && BattleSubFsm == null)
-            {
-                BattleSubFsm = MantisBattle.FindGameObjectInChildren("Battle Sub")?.LocateMyFSM("Start");
-                if (BattleSubFsm != null)
-                {
-                    BattleSubFsm.GetAction<Wait>("Do Pincer", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Dash L", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Dash L", 3).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Dash R", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Dash L 2", 3).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Dash R 2", 3).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("Stab Dash", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("Dash Stab", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("Double Stab", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Throw Wide", 2).time.Value = .0001f;
-                    BattleSubFsm.GetAction<Wait>("D Throw Narrow", 2).time.Value = .0001f;
-                }
-            }
+            // if (BattleSub == null && BattleSubFsm == null)
+            // {
+            //     BattleSubFsm = MantisBattle.FindGameObjectInChildren("Battle Sub")?.LocateMyFSM("Start");
+            //     if (BattleSubFsm != null)
+            //     {
+            //         BattleSubFsm.GetAction<Wait>("Do Pincer", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Dash L", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Dash L", 3).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Dash R", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Dash L 2", 3).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Dash R 2", 3).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("Stab Dash", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("Dash Stab", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("Double Stab", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Throw Wide", 2).time.Value = .0001f;
+            //         BattleSubFsm.GetAction<Wait>("D Throw Narrow", 2).time.Value = .0001f;
+            //     }
+            // }
 
             if (Lord1 == null)
             {
@@ -212,18 +201,19 @@ namespace Mantis_Gods
             PlayMakerFSM lordFsm = lord.LocateMyFSM("Mantis Lord");
 
             // Double contact damage
-            lord.GetComponent<DamageHero>().damageDealt *= 2;
+            foreach (DamageHero x in lord.GetComponents<DamageHero>())
+                x.damageDealt *= 2;
 
             // Double dash damage
-            lord.FindTransformInChildren("Dash Hit")
-                .GetComponent<DamageHero>()
-                .damageDealt *= 2;
+            foreach (DamageHero x in lord.FindTransformInChildren("Dash Hit").GetComponents<DamageHero>())
+                x.damageDealt *= 2;
 
             // 3x HP
             lord.GetComponent<HealthManager>().hp *= 3;
 
             // Remove some waits
-            lordFsm.GetAction<Wait>("Idle", 0).time.Value = 0.1f;
+            // shit hack
+            lordFsm.GetAction<Wait>("Idle", 0).time.Value = 0.0001f;
             lordFsm.GetAction<Wait>("Start Pause", 0).time.Value = 0;
             lordFsm.GetAction<Wait>("Throw CD", 0).time.Value = 0;
 
@@ -231,7 +221,7 @@ namespace Mantis_Gods
             lordFsm.GetAction<Wait>("Arrive Pause", 0).time.Value = 0.0001f;
             lordFsm.GetAction<Wait>("Arrive", 4).time.Value = 0.0001f;
             lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value = 0.0001f;
-            lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value = 0.0001f;
+            // lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value = 0.0001f;
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
