@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -61,6 +62,18 @@ namespace Mantis_Gods
             return (from t in fsm.FsmStates where t.Name == stateName let actions = t.Actions select t).FirstOrDefault();
         }
 
+        public static FsmState CopyState(PlayMakerFSM fsm, string stateName, string newState)
+        {
+            FsmState state = new FsmState(fsm.GetState(stateName));
+            state.Name = newState;
+            
+            List<FsmState> fsmStates = fsm.FsmStates.ToList();
+            fsmStates.Add(state);
+            fsm.Fsm.States = fsmStates.ToArray();
+            
+            return state;
+        }
+
         public static FsmStateAction GetAction(PlayMakerFSM fsm, string stateName, int index)
         {
             foreach (FsmState t in fsm.FsmStates)
@@ -106,7 +119,7 @@ namespace Mantis_Gods
                 t.Actions = actions;
             }
         }
-
+        
         public static void ChangeTransition(PlayMakerFSM fsm, string stateName, string eventName, string toState)
         {
             foreach (FsmState t in fsm.FsmStates)
@@ -119,6 +132,21 @@ namespace Mantis_Gods
                         trans.ToState = toState;
                     }
                 }
+            }
+        }
+        
+        public static void AddTransition(PlayMakerFSM fsm, string stateName, string eventName, string toState)
+        {
+            foreach (FsmState t in fsm.FsmStates)
+            {
+                if (t.Name != stateName) continue;
+                List<FsmTransition> transitions = t.Transitions.ToList();
+                transitions.Add(new FsmTransition()
+                {
+                    FsmEvent = new FsmEvent(eventName),
+                    ToState = toState
+                });
+                t.Transitions = transitions.ToArray();
             }
         }
 
@@ -260,9 +288,13 @@ namespace Mantis_Gods
 
         public static T GetAction<T>(this PlayMakerFSM fsm, string stateName, int index) where T : FsmStateAction => FsmUtil.GetAction<T>(fsm, stateName, index);
 
+        public static FsmState CopyState(this PlayMakerFSM fsm, string stateName, string newState) => FsmUtil.CopyState(fsm, stateName, newState);
+
         public static void AddAction(this PlayMakerFSM fsm, string stateName, FsmStateAction action) => FsmUtil.AddAction(fsm, stateName, action);
 
         public static void ChangeTransition(this PlayMakerFSM fsm, string stateName, string eventName, string toState) => FsmUtil.ChangeTransition(fsm, stateName, eventName, toState);
+
+        public static void AddTransition(this PlayMakerFSM fsm, string stateName, string eventName, string toState) => FsmUtil.AddTransition(fsm, stateName, eventName, toState);
 
         public static void RemoveTransitions(this PlayMakerFSM fsm, List<string> states, List<string> transitions) => FsmUtil.RemoveTransitions(fsm, states, transitions);
 

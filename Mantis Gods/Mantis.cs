@@ -157,6 +157,7 @@ namespace Mantis_Gods
                 MantisBattle = GameObject.Find("Mantis Battle");
             }
 
+            // Maybe later?
             // if (BattleSub == null && BattleSubFsm == null)
             // {
             //     BattleSubFsm = MantisBattle.FindGameObjectInChildren("Battle Sub")?.LocateMyFSM("Start");
@@ -213,15 +214,47 @@ namespace Mantis_Gods
 
             // Remove some waits
             // shit hack
-            lordFsm.GetAction<Wait>("Idle", 0).time.Value = 0.0001f;
+            lordFsm.GetAction<Wait>("Idle", 0).time.Value = 0f;//0.0001f;
             lordFsm.GetAction<Wait>("Start Pause", 0).time.Value = 0;
             lordFsm.GetAction<Wait>("Throw CD", 0).time.Value = 0;
 
             // new
-            lordFsm.GetAction<Wait>("Arrive Pause", 0).time.Value = 0.0001f;
+            lordFsm.GetAction<Wait>("Arrive Pause", 0).time.Value /= 2;
             lordFsm.GetAction<Wait>("Arrive", 4).time.Value = 0.0001f;
-            lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value = 0.0001f;
-            // lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value = 0.0001f;
+            lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value /= 2;
+            lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value /= 4;//= 0.0001f;
+            //try
+            //{
+            //    lordFsm.CopyState("Dash Dir", "Dash or Stay");
+
+            //    SendRandomEvent sendRandomEvent = lordFsm.GetAction<SendRandomEvent>("Dash or Stay", 3);
+            //    
+            //    Array.Resize(ref sendRandomEvent.weights, sendRandomEvent.weights.Length + 1);
+            //    sendRandomEvent.weights[sendRandomEvent.weights.Length - 1] = sendRandomEvent.weights[0];
+
+            //    Array.Resize(ref sendRandomEvent.events, sendRandomEvent.events.Length + 1);
+            //    sendRandomEvent.events[sendRandomEvent.events.Length - 1] = new FsmEvent("STAY");
+            //    
+            //    lordFsm.AddTransition("Dash or Stay", "STAY", "Dstab Leave");
+
+            //    lordFsm.ChangeTransition("Dstab Land", "FINISHED", "Dash or Stay");
+            //}
+            //catch (Exception e)
+            //{
+            //    Log(e.Message);
+            //}
+            
+            // lordFsm.CopyState("Dash Dir", "Dash Dir 2");
+            // lordFsm.CopyState("Dash R", "Dash R 2");
+            // lordFsm.CopyState("Dash L", "Dash L 2");
+            //  
+            // lordFsm.ChangeTransition("Dash Dir 2", "LEFT", "Dash L 2");
+            // lordFsm.ChangeTransition("Dash Dir 2", "Right", "Dash R 2");
+            // 
+            // lordFsm.ChangeTransition("Dash L 2", "FINISHED", "Dash Attack");
+            // lordFsm.ChangeTransition("Dash R 2", "FINISHED", "Dash Attack");
+            
+            // lordFsm.ChangeTransition("Dstab Land", "FINISHED", "Dash Dir 2");
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
@@ -361,7 +394,7 @@ namespace Mantis_Gods
             BoxCollider2D a = Plane.AddComponent<BoxCollider2D>();
             a.isTrigger = false;
 
-            // Make it exist
+            // Make it exist.
             Plane.SetActive(true);
         }
 
