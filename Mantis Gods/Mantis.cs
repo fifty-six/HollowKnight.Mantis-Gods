@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using GlobalEnums;
 using HutongGames.PlayMaker;
-using ModCommon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static Mantis_Gods.FsmutilExt;
@@ -132,6 +131,25 @@ namespace Mantis_Gods
             ModHooks.Instance.LanguageGetHook += LangGet;
             ModHooks.Instance.GetPlayerBoolHook += GetBool;
             ModHooks.Instance.SetPlayerBoolHook += SetBool;
+            ModHooks.Instance.ObjectPoolSpawnHook += ShotHandler;
+        }
+
+        private bool setValues;
+        private GameObject ShotHandler(GameObject go)
+        {
+            if (!go.name.Contains("Shot Mantis Lord")) return go;
+            Log(go.name);
+            PlayMakerFSM shotFsm = go.LocateMyFSM("Control");
+            if (shotFsm == null || setValues) return go;
+            // 40, 40, 20, 20
+            shotFsm.GetAction<SetFloatValue>("Set L", 0).floatValue = -48f;
+            shotFsm.GetAction<SetFloatValue>("Set R", 0).floatValue = 48f;
+            shotFsm.GetAction<SetFloatValue>("Set L", 1).floatValue = -20f;
+            shotFsm.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
+                
+            Log("Changed shot x velocity");
+
+            return go;
         }
 
         public void Update()
@@ -220,41 +238,9 @@ namespace Mantis_Gods
 
             // new
             lordFsm.GetAction<Wait>("Arrive Pause", 0).time.Value /= 2;
-            lordFsm.GetAction<Wait>("Arrive", 4).time.Value = 0.0001f;
+            lordFsm.GetAction<Wait>("Arrive", 4).time.Value /= 3;
             lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value /= 2;
             lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value /= 4;//= 0.0001f;
-            //try
-            //{
-            //    lordFsm.CopyState("Dash Dir", "Dash or Stay");
-
-            //    SendRandomEvent sendRandomEvent = lordFsm.GetAction<SendRandomEvent>("Dash or Stay", 3);
-            //    
-            //    Array.Resize(ref sendRandomEvent.weights, sendRandomEvent.weights.Length + 1);
-            //    sendRandomEvent.weights[sendRandomEvent.weights.Length - 1] = sendRandomEvent.weights[0];
-
-            //    Array.Resize(ref sendRandomEvent.events, sendRandomEvent.events.Length + 1);
-            //    sendRandomEvent.events[sendRandomEvent.events.Length - 1] = new FsmEvent("STAY");
-            //    
-            //    lordFsm.AddTransition("Dash or Stay", "STAY", "Dstab Leave");
-
-            //    lordFsm.ChangeTransition("Dstab Land", "FINISHED", "Dash or Stay");
-            //}
-            //catch (Exception e)
-            //{
-            //    Log(e.Message);
-            //}
-            
-            // lordFsm.CopyState("Dash Dir", "Dash Dir 2");
-            // lordFsm.CopyState("Dash R", "Dash R 2");
-            // lordFsm.CopyState("Dash L", "Dash L 2");
-            //  
-            // lordFsm.ChangeTransition("Dash Dir 2", "LEFT", "Dash L 2");
-            // lordFsm.ChangeTransition("Dash Dir 2", "Right", "Dash R 2");
-            // 
-            // lordFsm.ChangeTransition("Dash L 2", "FINISHED", "Dash Attack");
-            // lordFsm.ChangeTransition("Dash R 2", "FINISHED", "Dash Attack");
-            
-            // lordFsm.ChangeTransition("Dstab Land", "FINISHED", "Dash Dir 2");
 
             // Get animations
             tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
@@ -268,6 +254,10 @@ namespace Mantis_Gods
             if (lord.name.Contains("S"))
             {
                 UpdatePhase2(lordFsm);
+            }
+            else
+            {
+                lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value /= 3;
             }
 
             Log("Updated lord: " + lord.name);
