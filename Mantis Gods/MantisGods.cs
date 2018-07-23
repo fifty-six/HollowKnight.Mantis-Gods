@@ -65,7 +65,7 @@ namespace Mantis_Gods
         {
             string settingsFilePath = Application.persistentDataPath + ModHooks.PathSeperator + GetType().Name + ".GlobalSettings.json";
 
-            bool forceReloadGlobalSettings = GlobalSettings != null && GlobalSettings.SettingsVersion != MantisGlobalSettings.SettingsVer;
+            bool forceReloadGlobalSettings = GlobalSettings != null && GlobalSettings.SettingsVersion != MantisGlobalSettings.SETTINGS_VER;
 
             if (forceReloadGlobalSettings || !File.Exists(settingsFilePath))
             {

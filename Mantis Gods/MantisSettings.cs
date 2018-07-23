@@ -2,13 +2,9 @@
 
 namespace Mantis_Gods
 {
-    public static class VersionInfo
-    {
-    }
-
     public class MantisGlobalSettings : IModSettings
     {
-        readonly public static int SettingsVer = 2;
+        public const int SETTINGS_VER = 2;
 
         public void Reset()
         {
@@ -29,7 +25,7 @@ namespace Mantis_Gods
             FloorColorBlue = 0.0f;
             FloorColorAlpha = 0.0f;
 
-            SettingsVersion = SettingsVer;
+            SettingsVersion = SETTINGS_VER;
         }
 
         public int SettingsVersion { get => GetInt(); set => SetInt(value); }

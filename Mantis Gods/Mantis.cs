@@ -1,14 +1,11 @@
 ﻿using HutongGames.PlayMaker.Actions;
 using Modding;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using GlobalEnums;
-using HutongGames.PlayMaker;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static Mantis_Gods.FsmutilExt;
 using Logger = Modding.Logger;
 using Random = System.Random;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
@@ -48,10 +45,9 @@ namespace Mantis_Gods
             ["Throw Antic"] = 15.6f,
         };
 
-        public GameObject Lord2, Lord3, Lord1, Shot, BattleSub;
+        public GameObject Lord2, Lord3, Lord1;
         public GameObject MantisBattle;
         public GameObject Plane;
-        public PlayMakerFSM BattleSubFsm;
 
         private IEnumerator BattleBeat()
         {
@@ -111,7 +107,7 @@ namespace Mantis_Gods
             return c;
         }
 
-        private void Log(string str)
+        private static void Log(string str)
         {
             Logger.Log("[Mantis Gods]: " + str);
         }
@@ -134,21 +130,22 @@ namespace Mantis_Gods
             ModHooks.Instance.ObjectPoolSpawnHook += ShotHandler;
         }
 
-        private bool setValues;
-        private GameObject ShotHandler(GameObject go)
+        private static GameObject ShotHandler(GameObject go)
         {
+            // if you haven't defeated the normal lords do nothing
+            if (!PlayerData.instance.defeatedMantisLords) return go;
+            
+            // check for spikes
             if (!go.name.Contains("Shot Mantis Lord")) return go;
-            Log(go.name);
+            
             PlayMakerFSM shotFsm = go.LocateMyFSM("Control");
-            if (shotFsm == null || setValues) return go;
+            if (shotFsm == null) return go;
             // 40, 40, 20, 20
             shotFsm.GetAction<SetFloatValue>("Set L", 0).floatValue = -48f;
             shotFsm.GetAction<SetFloatValue>("Set R", 0).floatValue = 48f;
             shotFsm.GetAction<SetFloatValue>("Set L", 1).floatValue = -20f;
             shotFsm.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
                 
-            Log("Changed shot x velocity");
-
             return go;
         }
 
@@ -174,26 +171,6 @@ namespace Mantis_Gods
             {
                 MantisBattle = GameObject.Find("Mantis Battle");
             }
-
-            // Maybe later?
-            // if (BattleSub == null && BattleSubFsm == null)
-            // {
-            //     BattleSubFsm = MantisBattle.FindGameObjectInChildren("Battle Sub")?.LocateMyFSM("Start");
-            //     if (BattleSubFsm != null)
-            //     {
-            //         BattleSubFsm.GetAction<Wait>("Do Pincer", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Dash L", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Dash L", 3).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Dash R", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Dash L 2", 3).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Dash R 2", 3).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("Stab Dash", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("Dash Stab", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("Double Stab", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Throw Wide", 2).time.Value = .0001f;
-            //         BattleSubFsm.GetAction<Wait>("D Throw Narrow", 2).time.Value = .0001f;
-            //     }
-            // }
 
             if (Lord1 == null)
             {
@@ -263,7 +240,7 @@ namespace Mantis_Gods
             Log("Updated lord: " + lord.name);
         }
 
-        private void UpdatePhase2(PlayMakerFSM lordFsm)
+        private static void UpdatePhase2(PlayMakerFSM lordFsm)
         {
             // DASH, DSTAB, THROW
             // 1, 1, 1 => 1/6
@@ -271,7 +248,7 @@ namespace Mantis_Gods
             Log("Updated Phase 2 Lord: " + lordFsm.name);
         }
 
-        private Mesh CreateMesh(float width, float height)
+        private static Mesh CreateMesh(float width, float height)
         {
             Mesh m = new Mesh
             {
@@ -296,7 +273,7 @@ namespace Mantis_Gods
             return m;
         }
 
-        private bool GetBool(string originalSet)
+        private static bool GetBool(string originalSet)
         {
             if (originalSet == "defeatedMantisLords"
                 && PlayerData.instance.defeatedMantisLords
@@ -320,7 +297,7 @@ namespace Mantis_Gods
 
         private void ResetScene(Scene arg0, LoadSceneMode arg1)
         {
-            Lord1 = Lord2 = Lord3 = Shot = null;
+            Lord1 = Lord2 = Lord3 = null;
             
             Log("Reset scene: " + arg0.name);
             Log(GameManager.instance.entryGateName);
