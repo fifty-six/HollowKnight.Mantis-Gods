@@ -17,6 +17,7 @@ namespace Mantis_Gods
         public static Color FloorColor;
         public static bool RainbowFloor;
         public static int RainbowUpdateDelay;
+        public static bool NormalArena;
         public int CurrentDelay;
         public int RainbowPos;
 
@@ -308,6 +309,12 @@ namespace Mantis_Gods
             // Set the mapZone to White Palace so when you die
             // you don't spawn a shade and don't lose geo
             GameManager.instance.sm.mapZone = MapZone.WHITE_PALACE;
+
+            if (NormalArena)
+            {
+                // :(
+                return;
+            }
             
             // Destroy all game objects that aren't the BossLoader
             // BossLoader unloads the mantis lord stuff after you die

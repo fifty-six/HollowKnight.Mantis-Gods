@@ -55,6 +55,8 @@ namespace Mantis_Gods
                 Mantis.FloorColor = new Color(GlobalSettings.FloorColorRed, GlobalSettings.FloorColorGreen, GlobalSettings.FloorColorBlue, GlobalSettings.FloorColorAlpha);
             }
 
+            Mantis.NormalArena = GlobalSettings.NormalArena;
+
             SettingsInstance = Settings;
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }

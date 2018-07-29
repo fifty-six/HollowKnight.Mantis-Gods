@@ -4,7 +4,7 @@ namespace Mantis_Gods
 {
     public class MantisGlobalSettings : IModSettings
     {
-        public const int SETTINGS_VER = 2;
+        public const int SETTINGS_VER = 3;
 
         public void Reset()
         {
@@ -12,9 +12,6 @@ namespace Mantis_Gods
             IntValues.Clear();
             FloatValues.Clear();
             StringValues.Clear();
-
-            //infiniteGrimmIntegration = true;
-            // just kidding...
 
             // floor color in json. defaults to invisible and black.
             RainbowFloor = false;
@@ -24,17 +21,19 @@ namespace Mantis_Gods
             FloorColorGreen = 0.0f;
             FloorColorBlue = 0.0f;
             FloorColorAlpha = 0.0f;
+            NormalArena = false;
 
             SettingsVersion = SETTINGS_VER;
         }
 
-        public int SettingsVersion { get => GetInt(); set => SetInt(value); }
-        public bool RainbowFloor { get => GetBool(); set => SetBool(value); }
-        public int RainbowUpdateDelay { get => GetInt(); set => SetInt(value); }
-        public float FloorColorRed { get => GetFloat(); set => SetFloat(value); }
-        public float FloorColorGreen { get => GetFloat(); set => SetFloat(value); }
-        public float FloorColorBlue { get => GetFloat(); set => SetFloat(value); }
-        public float FloorColorAlpha { get => GetFloat(); set => SetFloat(value); }
+        public  int    SettingsVersion    { get => GetInt();   private set => SetInt(value);   }
+        public  bool   RainbowFloor       { get => GetBool();  private set => SetBool(value);  }
+        public  int    RainbowUpdateDelay { get => GetInt();   private set => SetInt(value);   }
+        public  float  FloorColorRed      { get => GetFloat(); private set => SetFloat(value); }
+        public  float  FloorColorGreen    { get => GetFloat(); private set => SetFloat(value); }
+        public  float  FloorColorBlue     { get => GetFloat(); private set => SetFloat(value); }
+        public  float  FloorColorAlpha    { get => GetFloat(); private set => SetFloat(value); }
+        public  bool   NormalArena        { get => GetBool();  private set => SetBool(value);  }
     }
 
     public class MantisSettings : IModSettings
