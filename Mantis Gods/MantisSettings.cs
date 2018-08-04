@@ -4,7 +4,7 @@ namespace Mantis_Gods
 {
     public class MantisGlobalSettings : IModSettings
     {
-        public const int SETTINGS_VER = 3;
+        public const int SETTINGS_VER = 4;
 
         public void Reset()
         {
@@ -22,6 +22,7 @@ namespace Mantis_Gods
             FloorColorBlue = 0.0f;
             FloorColorAlpha = 0.0f;
             NormalArena = false;
+            KeepSpikes = true;
 
             SettingsVersion = SETTINGS_VER;
         }
@@ -34,6 +35,7 @@ namespace Mantis_Gods
         public  float  FloorColorBlue     { get => GetFloat(); private set => SetFloat(value); }
         public  float  FloorColorAlpha    { get => GetFloat(); private set => SetFloat(value); }
         public  bool   NormalArena        { get => GetBool();  private set => SetBool(value);  }
+        public  bool   KeepSpikes         { get => GetBool();  private set => SetBool(value);  }
     }
 
     public class MantisSettings : IModSettings

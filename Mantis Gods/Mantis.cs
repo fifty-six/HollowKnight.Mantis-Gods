@@ -18,6 +18,7 @@ namespace Mantis_Gods
         public static bool RainbowFloor;
         public static int RainbowUpdateDelay;
         public static bool NormalArena;
+        public static bool KeepSpikes;
         public int CurrentDelay;
         public int RainbowPos;
 
@@ -198,15 +199,11 @@ namespace Mantis_Gods
             PlayMakerFSM lordFsm = lord.LocateMyFSM("Mantis Lord");
 
             // Double contact damage
-            foreach (DamageHero x in lord.GetComponents<DamageHero>())
-                x.damageDealt *= 2;
-
-            // Double dash damage
-            foreach (DamageHero x in lord.FindTransformInChildren("Dash Hit").GetComponents<DamageHero>())
-                x.damageDealt *= 2;
+            foreach (DamageHero x in lord.GetComponentsInChildren<DamageHero>(true))
+                x.damageDealt = 2;
 
             // 3x HP
-            lord.GetComponent<HealthManager>().hp *= 3;
+            lord.GetComponent<HealthManager>().hp = 630;
 
             // Remove some waits
             // shit hack
@@ -231,7 +228,7 @@ namespace Mantis_Gods
 
             if (lord.name.Contains("S"))
             {
-                UpdatePhase2(lordFsm);
+                UpdatePhase2(lord, lordFsm);
             }
             else
             {
@@ -241,8 +238,10 @@ namespace Mantis_Gods
             Log("Updated lord: " + lord.name);
         }
 
-        private static void UpdatePhase2(PlayMakerFSM lordFsm)
+        private static void UpdatePhase2(GameObject lord, PlayMakerFSM lordFsm)
         {
+            lord.GetComponent<HealthManager>().hp = 480;
+            
             // DASH, DSTAB, THROW
             // 1, 1, 1 => 1/6
             lordFsm.GetAction<SendRandomEventV3>("Attack Choice", 5).weights[2].Value /= 10f;
@@ -286,10 +285,12 @@ namespace Mantis_Gods
 
             return PlayerData.instance.GetBoolInternal(originalSet);
         }
+        
+        
 
         // Used to override the text for Mantis Lords
         // Mantis Lords => Mantis Gods
-        private string LangGet(string key, string sheetTitle)
+        private static string LangGet(string key, string sheetTitle)
         {
             if (key == "MANTIS_LORDS_MAIN" && PlayerData.instance.defeatedMantisLords)
                 return "Gods";
@@ -310,23 +311,48 @@ namespace Mantis_Gods
             // you don't spawn a shade and don't lose geo
             GameManager.instance.sm.mapZone = MapZone.WHITE_PALACE;
 
-            if (NormalArena)
-            {
-                // :(
-                return;
-            }
-            
             // Destroy all game objects that aren't the BossLoader
             // BossLoader unloads the mantis lord stuff after you die
             foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
             {
-                if (go.name == "BossLoader") continue;
-                Destroy(go);
+                if (NormalArena)
+                {
+                    if (!KeepSpikes && go.name.Contains("Deep Spikes")
+                       || go.GetComponent<HealthManager>() != null) 
+                    {
+                        Destroy(go);
+                    }
+                }
+                else
+                {
+                    if (go.name == "BossLoader") continue;
+                    Destroy(go);
+                }
+            }
+
+             GameObject[] gos =
+             {
+                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors"),
+                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)")
+            };
+            
+            if (NormalArena)
+            {
+                if (KeepSpikes) return;
+                
+                foreach (GameObject go in gos)
+                {
+                    go.LocateMyFSM("Floor Control")
+                        .ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
+                }
+                return;
             }
 
             // Remove the brown floor thingies
-            Destroy(GameObject.Find("Mantis Battle/mantis_lord_opening_floors"));
-            Destroy(GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)"));
+            foreach (GameObject go in gos)
+            {
+                Destroy(go);
+            }
 
             // Remove any particles
             SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();

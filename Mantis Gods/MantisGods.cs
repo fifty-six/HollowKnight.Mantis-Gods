@@ -56,6 +56,7 @@ namespace Mantis_Gods
             }
 
             Mantis.NormalArena = GlobalSettings.NormalArena;
+            Mantis.KeepSpikes = GlobalSettings.KeepSpikes;
 
             SettingsInstance = Settings;
             GameManager.instance.gameObject.AddComponent<Mantis>();
