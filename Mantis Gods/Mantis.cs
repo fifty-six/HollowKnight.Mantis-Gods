@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using GlobalEnums;
+using HutongGames.PlayMaker;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = Modding.Logger;
@@ -22,49 +23,26 @@ namespace Mantis_Gods
         public int CurrentDelay;
         public int RainbowPos;
 
-        // ReSharper disable once InconsistentNaming
-        // Dictionary of attacks and the new FPS values they're set to
-        // Higher is faster.
-        private readonly Dictionary<string, float> FPSdict = new Dictionary<string, float>
-        {
-            ["Dash Arrive"] = 30,
-            ["Dash Antic"] = 35,
-            ["Dash Attack"] = 45,
-            ["Dash Recover"] = 45,
-            ["Dash Leave"] = 45,
-            ["Lance"] = 120,
-
-            ["Dstab Leave"] = 45,
-            ["Dstab Arrive"] = 34,
-            ["Dstab Attack"] = 34,
-            ["Dstab Land"] = 34,
-
-            ["Wall Arrive"] = 45,
-            ["Wall Leave 1"] = 15.6f,
-            ["Wall Leave 2"] = 26,
-            ["Wall Ready"] = 24,
-            ["Throw"] = 55,
-            ["Throw Antic"] = 15.6f,
-        };
-
-        public GameObject Lord2, Lord3, Lord1;
-        public GameObject MantisBattle;
-        public GameObject Plane;
+        private GameObject _lord2, _lord3, _lord1;
+        private GameObject _mantisBattle;
+        private GameObject _plane;
 
         private IEnumerator BattleBeat()
         {
             Log("Started Battle Beat Coroutine");
-            
+
             yield return new WaitForSeconds(13);
-            
-            Destroy(Plane);
-            
+
+            Destroy(_plane);
+
             yield return new WaitForSeconds(6);
-            
-            GameManager.instance.GetType().GetField("entryDelay", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(GameManager.instance, 1f);
-            GameManager.instance.GetType().GetField("targetScene", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(GameManager.instance, "Fungus2_14");
+
+            GameManager.instance.GetType().GetField("entryDelay", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(GameManager.instance, 1f);
+            GameManager.instance.GetType().GetField("targetScene", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(GameManager.instance, "Fungus2_14");
             GameManager.instance.entryGateName = "bot3";
-            
+
             // Go to Fungus2_15 from the bottom 3 entrance
             // This is where you would fall down from where claw is into the arena
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
@@ -75,7 +53,7 @@ namespace Mantis_Gods
                 SceneName = "Fungus2_14",
                 Visualization = GameManager.SceneLoadVisualizations.Dream
             });
-            
+
             Log("Finished Coroutine");
         }
 
@@ -136,10 +114,10 @@ namespace Mantis_Gods
         {
             // if you haven't defeated the normal lords do nothing
             if (!PlayerData.instance.defeatedMantisLords) return go;
-            
+
             // check for spikes
             if (!go.name.Contains("Shot Mantis Lord")) return go;
-            
+
             PlayMakerFSM shotFsm = go.LocateMyFSM("Control");
             if (shotFsm == null) return go;
             // 40, 40, 20, 20
@@ -147,13 +125,13 @@ namespace Mantis_Gods
             shotFsm.GetAction<SetFloatValue>("Set R", 0).floatValue = 48f;
             shotFsm.GetAction<SetFloatValue>("Set L", 1).floatValue = -20f;
             shotFsm.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
-                
+
             return go;
         }
 
         public void Update()
         {
-            if (RainbowFloor && Plane != null)
+            if (RainbowFloor && _plane != null)
             {
                 CurrentDelay++;
                 if (CurrentDelay >= RainbowUpdateDelay)
@@ -161,91 +139,32 @@ namespace Mantis_Gods
                     Texture2D tex = new Texture2D(1, 1);
                     tex.SetPixel(0, 0, GetNextRainbowColor());
                     tex.Apply();
-                    Plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
+                    _plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
                     CurrentDelay = 0;
                 }
             }
 
             if (!PlayerData.instance.defeatedMantisLords) return;
-            if (Lord1 != null && Lord2 != null && Lord3 != null) return;
+            if (_lord1 != null && _lord2 != null && _lord3 != null) return;
 
-            if (MantisBattle == null)
+            if (_mantisBattle == null)
             {
-                MantisBattle = GameObject.Find("Mantis Battle");
+                _mantisBattle = GameObject.Find("Mantis Battle");
             }
 
-            if (Lord1 == null)
+            if (_lord1 == null)
             {
-                Lord1 = GameObject.Find("Mantis Lord") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord");
-                UpdateLord(Lord1);
+                _lord1 = _mantisBattle.FindGameObjectInChildren("Mantis Lord");
+                _lord1.AddComponent<Lord>();
             }
 
-            if (Lord3 != null && Lord2 != null) return;
+            if (_lord3 != null && _lord2 != null) return;
 
-            Lord2 = GameObject.Find("Mantis Lord S1") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S1");
-            Lord3 = GameObject.Find("Mantis Lord S2") ?? MantisBattle.FindGameObjectInChildren("Mantis Lord S2");
-
-            UpdateLord(Lord2);
-            UpdateLord(Lord3);
-        }
-
-        private void UpdateLord(GameObject lord)
-        {
-            if (lord == null) return;
-
-            Log("Got Lord: " + lord.name);
-
-            // Get control FSM for lord
-            PlayMakerFSM lordFsm = lord.LocateMyFSM("Mantis Lord");
-
-            // Double contact damage
-            foreach (DamageHero x in lord.GetComponentsInChildren<DamageHero>(true))
-                x.damageDealt = 2;
-
-            // 3x HP
-            lord.GetComponent<HealthManager>().hp = 630;
-
-            // Remove some waits
-            // shit hack
-            lordFsm.GetAction<Wait>("Idle", 0).time.Value = 0f;//0.0001f;
-            lordFsm.GetAction<Wait>("Start Pause", 0).time.Value = 0;
-            lordFsm.GetAction<Wait>("Throw CD", 0).time.Value = 0;
-
-            // new
-            lordFsm.GetAction<Wait>("Arrive Pause", 0).time.Value /= 2;
-            lordFsm.GetAction<Wait>("Arrive", 4).time.Value /= 3;
-            lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value /= 2;
-            lordFsm.GetAction<Wait>("After Throw Pause", 3).time.Value /= 4;//= 0.0001f;
-
-            // Get animations
-            tk2dSpriteAnimator lordAnim = lord.GetComponent<tk2dSpriteAnimator>();
+            _lord2 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S1");
+            _lord3 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S2");
             
-            // Set the fps values as indicated in the dictionary
-            foreach (KeyValuePair<string, float> i in FPSdict)
-            {
-                lordAnim.GetClipByName(i.Key).fps = i.Value;
-            }
-
-            if (lord.name.Contains("S"))
-            {
-                UpdatePhase2(lord, lordFsm);
-            }
-            else
-            {
-                lordFsm.GetAction<Wait>("Leave Pause", 0).time.Value /= 3;
-            }
-
-            Log("Updated lord: " + lord.name);
-        }
-
-        private static void UpdatePhase2(GameObject lord, PlayMakerFSM lordFsm)
-        {
-            lord.GetComponent<HealthManager>().hp = 480;
-            
-            // DASH, DSTAB, THROW
-            // 1, 1, 1 => 1/6
-            lordFsm.GetAction<SendRandomEventV3>("Attack Choice", 5).weights[2].Value /= 10f;
-            Log("Updated Phase 2 Lord: " + lordFsm.name);
+           _lord2.AddComponent<Lord>();
+           _lord3.AddComponent<Lord>();
         }
 
         private static Mesh CreateMesh(float width, float height)
@@ -256,18 +175,18 @@ namespace Mantis_Gods
                 vertices = new Vector3[]
                 {
                     new Vector3(-width, -height, 0.01f),
-                    new Vector3(width,  -height, 0.01f),
-                    new Vector3(width,  height,  0.01f),
-                    new Vector3(-width, height,  0.01f)
+                    new Vector3(width, -height, 0.01f),
+                    new Vector3(width, height, 0.01f),
+                    new Vector3(-width, height, 0.01f)
                 },
                 uv = new Vector2[]
                 {
-                    new Vector2 (0, 0),
-                    new Vector2 (0, 1),
-                    new Vector2 (1, 1),
-                    new Vector2 (1, 0)
+                    new Vector2(0, 0),
+                    new Vector2(0, 1),
+                    new Vector2(1, 1),
+                    new Vector2(1, 0)
                 },
-                triangles = new int[] { 0, 1, 2, 0, 2, 3 }
+                triangles = new int[] {0, 1, 2, 0, 2, 3}
             };
             m.RecalculateNormals();
             return m;
@@ -285,8 +204,7 @@ namespace Mantis_Gods
 
             return PlayerData.instance.GetBoolInternal(originalSet);
         }
-        
-        
+
 
         // Used to override the text for Mantis Lords
         // Mantis Lords => Mantis Gods
@@ -299,8 +217,8 @@ namespace Mantis_Gods
 
         private void ResetScene(Scene arg0, LoadSceneMode arg1)
         {
-            Lord1 = Lord2 = Lord3 = null;
-            
+            _lord1 = _lord2 = _lord3 = null;
+
             Log("Reset scene: " + arg0.name);
             Log(GameManager.instance.entryGateName);
 
@@ -318,7 +236,7 @@ namespace Mantis_Gods
                 if (NormalArena)
                 {
                     if (!KeepSpikes && go.name.Contains("Deep Spikes")
-                       || go.GetComponent<HealthManager>() != null) 
+                        || go.GetComponent<HealthManager>() != null)
                     {
                         Destroy(go);
                     }
@@ -330,21 +248,22 @@ namespace Mantis_Gods
                 }
             }
 
-             GameObject[] gos =
-             {
-                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors"),
-                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)")
+            GameObject[] gos =
+            {
+                GameObject.Find("Mantis Battle/mantis_lord_opening_floors"),
+                GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)")
             };
-            
+
             if (NormalArena)
             {
                 if (KeepSpikes) return;
-                
+
                 foreach (GameObject go in gos)
                 {
                     go.LocateMyFSM("Floor Control")
                         .ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
                 }
+
                 return;
             }
 
@@ -359,7 +278,7 @@ namespace Mantis_Gods
             spc.DisableParticles();
 
             // Make the floor plane
-            Plane = new GameObject("Plane")
+            _plane = new GameObject("Plane")
             {
                 // make it able to be walked on
                 tag = "HeroWalkable",
@@ -367,9 +286,9 @@ namespace Mantis_Gods
             };
 
             // Dimensions
-            MeshFilter meshFilter = Plane.AddComponent<MeshFilter>();
+            MeshFilter meshFilter = _plane.AddComponent<MeshFilter>();
             meshFilter.mesh = CreateMesh(200, 6.03f);
-            MeshRenderer renderer = Plane.AddComponent<MeshRenderer>();
+            MeshRenderer renderer = _plane.AddComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("Particles/Additive");
 
             // Color
@@ -391,11 +310,11 @@ namespace Mantis_Gods
             renderer.material.color = Color.white;
 
             // Collider
-            BoxCollider2D a = Plane.AddComponent<BoxCollider2D>();
+            BoxCollider2D a = _plane.AddComponent<BoxCollider2D>();
             a.isTrigger = false;
 
             // Make it exist.
-            Plane.SetActive(true);
+            _plane.SetActive(true);
         }
 
         private void SetBool(string originalSet, bool value)
@@ -407,6 +326,7 @@ namespace Mantis_Gods
                 MantisGods.SettingsInstance.DefeatedGods = true;
                 StartCoroutine(BattleBeat());
             }
+
             PlayerData.instance.SetBoolInternal(originalSet, value);
         }
     }

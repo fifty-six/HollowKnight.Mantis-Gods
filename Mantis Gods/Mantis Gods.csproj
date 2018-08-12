@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FsmUtil.cs" />
+    <Compile Include="Lord.cs" />
     <Compile Include="Mantis.cs" />
     <Compile Include="MantisGods.cs" />
     <Compile Include="MantisSettings.cs" />
