@@ -155,16 +155,18 @@ namespace Mantis_Gods
             if (_lord1 == null)
             {
                 _lord1 = _mantisBattle.FindGameObjectInChildren("Mantis Lord");
-                _lord1.AddComponent<Lord>();
+                if (_lord1 != null) _lord1.AddComponent<Lord>();
             }
 
             if (_lord3 != null && _lord2 != null) return;
 
             _lord2 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S1");
             _lord3 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S2");
+
+            if (_lord3 == null || _lord2 == null) return;
             
-           _lord2.AddComponent<Lord>();
-           _lord3.AddComponent<Lord>();
+            _lord2.AddComponent<Lord>();
+            _lord3.AddComponent<Lord>();
         }
 
         private static Mesh CreateMesh(float width, float height)
