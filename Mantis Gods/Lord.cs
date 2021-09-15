@@ -2,16 +2,15 @@
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
+using Vasi;
 
 namespace Mantis_Gods
 {
     public class Lord : MonoBehaviour
-    
     {
-        // ReSharper disable once InconsistentNaming
         // Dictionary of attacks and the new FPS values they're set to
         // Higher is faster.
-        private readonly Dictionary<string, float> FPSdict = new Dictionary<string, float>
+        private readonly Dictionary<string, float> AnimationFps = new Dictionary<string, float>
         {
             ["Dash Arrive"] = 30,
             ["Dash Antic"] = 35,
@@ -66,7 +65,7 @@ namespace Mantis_Gods
             _control.GetAction<Wait>("Leave Pause", 0).time.Value /= 2;
             _control.GetAction<Wait>("After Throw Pause", 3).time.Value /= 4;
             
-            _control.InsertAction("Start Pause", new CallMethod
+            _control.GetState("Start Pause").InsertAction(0, new CallMethod
             {
                 behaviour = HeroController.instance,
                 methodName = "SetHazardRespawn",
@@ -82,11 +81,11 @@ namespace Mantis_Gods
                     }
                 },
                 everyFrame = false
-            }, 0 );
+            });
             
 
             // Set the fps values as indicated in the dictionary
-            foreach (KeyValuePair<string, float> i in FPSdict)
+            foreach (KeyValuePair<string, float> i in AnimationFps)
             {
                 _anim.GetClipByName(i.Key).fps = i.Value;
             }

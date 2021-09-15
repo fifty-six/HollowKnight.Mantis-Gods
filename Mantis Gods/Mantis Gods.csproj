@@ -1,71 +1,54 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3D5E88CC-D2F1-485D-B7A8-F1174D2178A9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Mantis_Gods</RootNamespace>
-    <AssemblyName>Mantis Gods</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\HollowKnight.Modding - Copy\OutputFinal\hollow_knight_Data\Managed\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="PlayMaker">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\PlayMaker.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="FsmUtil.cs" />
-    <Compile Include="Lord.cs" />
-    <Compile Include="Mantis.cs" />
-    <Compile Include="MantisGods.cs" />
-    <Compile Include="MantisSettings.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>@echo on
-SET MOD_DEST="D:\Steam\\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\"
-echo Copying mod
-copy "$(TargetPath)" %25MOD_DEST%25</PostBuildEvent>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Mantis_Gods</RootNamespace>
+        <TargetFramework>net472</TargetFramework>
+        <AssemblyTitle>Mantis Gods</AssemblyTitle>
+        <Product>Mantis Gods</Product>
+        <Copyright>Copyright © 2018</Copyright>
+        <OutputPath>bin\$(Configuration)\</OutputPath>
+        <Version>1.1.0.0</Version>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\PlayMaker.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Data.DataSetExtensions" />
+        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\UnityEngine.Physics2DModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\..\..\References\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="Vasi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\..\References\Mods\Vasi.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <Target Name="CopyMod" AfterTargets="PostBuildEvent">
+        <Copy SourceFiles="$(TargetPath);$(TargetDir)$(TargetName).pdb" DestinationFolder="D:/Steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/Mods/$(TargetName)" SkipUnchangedFiles="true" />
+    </Target>
+
+    <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+        <MakeDir Directories="$(ProjectDir)Output" />
+        <Delete Files="$(ProjectDir)/$(TargetName).zip" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy Condition="Exists('$(SolutionDir)/README.md')" SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" ContinueOnError="true" />
+        <ZipDirectory DestinationFile="$(ProjectDir)/$(TargetName).zip" SourceDirectory="$(ProjectDir)/Output" />
+        <RemoveDir Directories="$(ProjectDir)Output" />
+
+        <GetFileHash Files="$(ProjectDir)/$(TargetName).zip" Algorithm="SHA256">
+            <Output TaskParameter="Items" ItemName="FilesWithHashes" />
+        </GetFileHash>
+        <Message Importance="High" Text="@(FilesWithHashes->'%(Identity): %(FileHash)')" />
+    </Target>
 </Project>

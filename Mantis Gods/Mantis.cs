@@ -1,12 +1,10 @@
 ﻿using HutongGames.PlayMaker.Actions;
 using Modding;
 using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using GlobalEnums;
-using HutongGames.PlayMaker;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Vasi;
 using Logger = Modding.Logger;
 using Random = System.Random;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
@@ -37,10 +35,8 @@ namespace Mantis_Gods
 
             yield return new WaitForSeconds(6);
 
-            GameManager.instance.GetType().GetField("entryDelay", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.SetValue(GameManager.instance, 1f);
-            GameManager.instance.GetType().GetField("targetScene", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.SetValue(GameManager.instance, "Fungus2_14");
+            ReflectionHelper.SetField(GameManager.instance, "entryDelay", 1f);
+            ReflectionHelper.SetField(GameManager.instance, "targetScene", "Fungus2_14");
             GameManager.instance.entryGateName = "bot3";
 
             // Go to Fungus2_15 from the bottom 3 entrance
@@ -59,11 +55,13 @@ namespace Mantis_Gods
 
         private Color GetNextRainbowColor()
         {
-            Color c = new Color();
-            // the cycle repeats every 768
+            var c = new Color();
 
+            // the cycle repeats every 768
             int realCyclePos = RainbowPos % 768;
+            
             c.a = 1.0f;
+            
             if (realCyclePos < 256)
             {
                 c.b = 0;
@@ -84,6 +82,7 @@ namespace Mantis_Gods
             }
 
             RainbowPos++;
+            
             return c;
         }
 
@@ -96,18 +95,18 @@ namespace Mantis_Gods
         {
             // So that they don't remain after you quit out
             USceneManager.sceneLoaded -= ResetScene;
-            ModHooks.Instance.LanguageGetHook -= LangGet;
-            ModHooks.Instance.GetPlayerBoolHook -= GetBool;
-            ModHooks.Instance.SetPlayerBoolHook -= SetBool;
+            ModHooks.LanguageGetHook -= LangGet;
+            ModHooks.GetPlayerBoolHook -= GetBool;
+            ModHooks.SetPlayerBoolHook -= SetBool;
         }
 
         public void Start()
         {
             USceneManager.sceneLoaded += ResetScene;
-            ModHooks.Instance.LanguageGetHook += LangGet;
-            ModHooks.Instance.GetPlayerBoolHook += GetBool;
-            ModHooks.Instance.SetPlayerBoolHook += SetBool;
-            ModHooks.Instance.ObjectPoolSpawnHook += ShotHandler;
+            ModHooks.LanguageGetHook += LangGet;
+            ModHooks.GetPlayerBoolHook += GetBool;
+            ModHooks.SetPlayerBoolHook += SetBool;
+            ModHooks.ObjectPoolSpawnHook += ShotHandler;
         }
 
         private static GameObject ShotHandler(GameObject go)
@@ -194,35 +193,33 @@ namespace Mantis_Gods
             return m;
         }
 
-        private static bool GetBool(string originalSet)
+        private bool GetBool(string originalSet, bool orig)
         {
             if (originalSet == "defeatedMantisLords"
                 && PlayerData.instance.defeatedMantisLords
-                && !MantisGods.SettingsInstance.DefeatedGods
+                && !MantisGods.Instance.Settings.DefeatedGods
                 && HeroController.instance.hero_state == ActorStates.no_input)
             {
                 return false;
             }
 
-            return PlayerData.instance.GetBoolInternal(originalSet);
+            return orig;
         }
 
 
         // Used to override the text for Mantis Lords
         // Mantis Lords => Mantis Gods
-        private static string LangGet(string key, string sheetTitle)
+        private static string LangGet(string key, string sheetTitle, string orig)
         {
             if (key == "MANTIS_LORDS_MAIN" && PlayerData.instance.defeatedMantisLords)
                 return "Gods";
-            return Language.Language.GetInternal(key, sheetTitle);
+
+            return orig;
         }
 
         private void ResetScene(Scene arg0, LoadSceneMode arg1)
         {
             _lord1 = _lord2 = _lord3 = null;
-
-            Log("Reset scene: " + arg0.name);
-            Log(GameManager.instance.entryGateName);
 
             if (arg0.name != "Fungus2_15_boss") return;
             if (!PlayerData.instance.defeatedMantisLords) return;
@@ -237,8 +234,12 @@ namespace Mantis_Gods
             {
                 if (NormalArena)
                 {
-                    if (!KeepSpikes && go.name.Contains("Deep Spikes")
-                        || go.GetComponent<HealthManager>() != null)
+                    if 
+                    (
+                        !KeepSpikes 
+                        && go.name.Contains("Deep Spikes")
+                        || go.GetComponent<HealthManager>() != null
+                    )
                     {
                         Destroy(go);
                     }
@@ -250,7 +251,7 @@ namespace Mantis_Gods
                 }
             }
 
-            GameObject[] gos =
+            GameObject[] floors =
             {
                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors"),
                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)")
@@ -260,50 +261,50 @@ namespace Mantis_Gods
             {
                 if (KeepSpikes) return;
 
-                foreach (GameObject go in gos)
+                foreach (GameObject go in floors)
                 {
                     go.LocateMyFSM("Floor Control")
-                        .ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
+                      .ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
                 }
 
                 return;
             }
 
             // Remove the brown floor thingies
-            foreach (GameObject go in gos)
+            foreach (GameObject go in floors)
             {
                 Destroy(go);
             }
 
             // Remove any particles
-            SceneParticlesController spc = FindObjectOfType<SceneParticlesController>();
+            var spc = FindObjectOfType<SceneParticlesController>();
             spc.DisableParticles();
 
             // Make the floor plane
             _plane = new GameObject("Plane")
             {
-                // make it able to be walked on
+                // Make it able to be walked on
                 tag = "HeroWalkable",
                 layer = 8
             };
 
             // Dimensions
-            MeshFilter meshFilter = _plane.AddComponent<MeshFilter>();
+            var meshFilter = _plane.AddComponent<MeshFilter>();
             meshFilter.mesh = CreateMesh(200, 6.03f);
-            MeshRenderer renderer = _plane.AddComponent<MeshRenderer>();
+            var renderer = _plane.AddComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("Particles/Additive");
 
             // Color
             if (RainbowFloor)
             {
-                Random rand = new Random();
+                var rand = new Random();
                 RainbowPos = rand.Next(0, 767);
                 FloorColor = GetNextRainbowColor();
                 CurrentDelay = 0;
             }
 
             // Texture
-            Texture2D tex = new Texture2D(1, 1);
+            var tex = new Texture2D(1, 1);
             tex.SetPixel(0, 0, FloorColor);
             tex.Apply();
 
@@ -312,24 +313,24 @@ namespace Mantis_Gods
             renderer.material.color = Color.white;
 
             // Collider
-            BoxCollider2D a = _plane.AddComponent<BoxCollider2D>();
-            a.isTrigger = false;
+            var col = _plane.AddComponent<BoxCollider2D>();
+            col.isTrigger = false;
 
             // Make it exist.
             _plane.SetActive(true);
         }
 
-        private void SetBool(string originalSet, bool value)
+        private bool SetBool(string originalSet, bool value)
         {
-            // If you've already defeated mantis lords and you'r defeating them again
+            // If you've already defeated mantis lords and you're defeating them again
             // then you've just beat mantis gods
-            if (originalSet == "defeatedMantisLords" && PlayerData.instance.defeatedMantisLords && value)
-            {
-                MantisGods.SettingsInstance.DefeatedGods = true;
-                StartCoroutine(BattleBeat());
-            }
+            if (originalSet != "defeatedMantisLords" || !PlayerData.instance.defeatedMantisLords || !value) 
+                return value;
+            
+            MantisGods.Instance.Settings.DefeatedGods = true;
+            StartCoroutine(BattleBeat());
 
-            PlayerData.instance.SetBoolInternal(originalSet, value);
+            return true;
         }
     }
 }
