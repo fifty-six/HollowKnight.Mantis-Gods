@@ -10,9 +10,9 @@ namespace Mantis_Gods
     {
         public static MantisGods Instance;
 
-        public LocalSettings Settings;
+        public LocalSettings Settings=new LocalSettings();
         
-        private GlobalSettings _global;
+        private GlobalSettings _global=new GlobalSettings();
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 

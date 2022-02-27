@@ -7,29 +7,30 @@
         <Copyright>Copyright © 2018</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <Version>1.1.0.0</Version>
+        <HKModdingPath>D:\HKmod\1.5Moddingapi\</HKModdingPath>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\Assembly-CSharp.dll</HintPath>
+            <HintPath>$(HKModdingPath)Assembly-CSharp.dll</HintPath>
         </Reference>
         <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\PlayMaker.dll</HintPath>
+            <HintPath>$(HKModdingPath)PlayMaker.dll</HintPath>
         </Reference>
         <Reference Include="System.Data.DataSetExtensions" />
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.dll</HintPath>
+            <HintPath>$(HKModdingPath)UnityEngine.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.CoreModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)UnityEngine.CoreModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.Physics2DModule.dll</HintPath>
+            <HintPath>$(HKModdingPath)UnityEngine.Physics2DModule.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\..\..\References\UnityEngine.UI.dll</HintPath>
+            <HintPath>$(HKModdingPath)UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="Vasi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\..\..\References\Mods\Vasi.dll</HintPath>
+          <HintPath>$(HKModdingPath)Vasi.dll</HintPath>
         </Reference>
     </ItemGroup>
 
