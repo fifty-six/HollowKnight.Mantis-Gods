@@ -7,7 +7,7 @@
         <Copyright>Copyright © 2018</Copyright>
         <OutputPath>bin\$(Configuration)\</OutputPath>
         <Version>1.1.0.0</Version>
-        <HKModdingPath>D:\HKmod\1.5Moddingapi\</HKModdingPath>
+        <HKModdingPath>..\..\..\References\</HKModdingPath>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
@@ -30,7 +30,7 @@
             <HintPath>$(HKModdingPath)UnityEngine.UI.dll</HintPath>
         </Reference>
         <Reference Include="Vasi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>$(HKModdingPath)Vasi.dll</HintPath>
+          <HintPath>$(HKModdingPath)\Mods\Vasi.dll</HintPath>
         </Reference>
     </ItemGroup>
 

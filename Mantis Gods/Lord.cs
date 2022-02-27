@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using Modding;
 using UnityEngine;
 using Vasi;
 
@@ -45,14 +45,12 @@ namespace Mantis_Gods
 
         private void Start()
         {
-            Log("Got Lord: " + gameObject.name);
-
             // Double contact damage
             foreach (DamageHero x in gameObject.GetComponentsInChildren<DamageHero>(true))
                 x.damageDealt = 2;
 
             // 3x HP
-            _hm.hp = 630;
+            _hm.hp = 210 * 3;
 
             // Remove some waits
             // A 0 on the Idle causes the Battle Sub FSM in the second phase
@@ -65,41 +63,16 @@ namespace Mantis_Gods
             _control.GetAction<Wait>("Leave Pause", 0).time.Value /= 2;
             _control.GetAction<Wait>("After Throw Pause", 3).time.Value /= 4;
             
-            _control.GetState("Start Pause").InsertAction(0, new CallMethod
-            {
-                behaviour = HeroController.instance,
-                methodName = "SetHazardRespawn",
-                parameters = new FsmVar[] 
-                {
-                    new FsmVar(typeof(Vector3))
-                    {
-                        vector3Value = new Vector3(31.9f, 7.4f)
-                    },
-                    new FsmVar(typeof(bool))
-                    {
-                        boolValue = false
-                    }
-                },
-                everyFrame = false
-            });
+            _control.GetState("Start Pause").InsertMethod(0, () => HeroController.instance.SetHazardRespawn(new Vector3(31.9f, 7.4f), facingRight: false));
             
-
             // Set the fps values as indicated in the dictionary
-            foreach (KeyValuePair<string, float> i in AnimationFps)
-            {
-                _anim.GetClipByName(i.Key).fps = i.Value;
-            }
+            foreach ((string key, float value) in AnimationFps)
+                _anim.GetClipByName(key).fps = value;
 
             if (gameObject.name.Contains("S"))
-            {
                 UpdatePhase2(gameObject, _control);
-            }
             else
-            {
                 _control.GetAction<Wait>("Leave Pause", 0).time.Value /= 3;
-            }
-
-            Log("Updated lord: " + gameObject.name);
         }
         
         private static void UpdatePhase2(GameObject lord, PlayMakerFSM lordFsm)
@@ -109,15 +82,7 @@ namespace Mantis_Gods
             // DASH, DSTAB, THROW
             // 1, 1, 1 => 1/6
             lordFsm.GetAction<SendRandomEventV3>("Attack Choice", 5).weights[2].Value /= 10f;
-            Log("Updated Phase 2 Lord: " + lordFsm.name);
             PlayerData.instance.SetHazardRespawn(new Vector3(31.9f, 7.4f, 0), false);
         }
-
-        private static void Log(string str)
-        {
-            Modding.Logger.Log("[Mantis Gods]: " + str);
-        }
-
-        
     }
 }

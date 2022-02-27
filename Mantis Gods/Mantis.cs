@@ -1,7 +1,8 @@
-﻿using HutongGames.PlayMaker.Actions;
-using Modding;
-using System.Collections;
+﻿using System.Collections;
+using System.Linq;
 using GlobalEnums;
+using HutongGames.PlayMaker.Actions;
+using Modding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Vasi;
@@ -18,16 +19,17 @@ namespace Mantis_Gods
         public static int RainbowUpdateDelay;
         public static bool NormalArena;
         public static bool KeepSpikes;
+        
         public int CurrentDelay;
         public int RainbowPos;
 
-        private GameObject _lord2, _lord3, _lord1;
+        private GameObject[] _lords = new GameObject[3];
         private GameObject _mantisBattle;
         private GameObject _plane;
 
         private IEnumerator BattleBeat()
         {
-            Log("Started Battle Beat Coroutine");
+            LogDebug("Started Battle Beat Coroutine");
 
             yield return new WaitForSeconds(13);
 
@@ -41,16 +43,19 @@ namespace Mantis_Gods
 
             // Go to Fungus2_15 from the bottom 3 entrance
             // This is where you would fall down from where claw is into the arena
-            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-            {
-                AlwaysUnloadUnusedAssets = true,
-                EntryGateName = "bot3",
-                PreventCameraFadeOut = false,
-                SceneName = "Fungus2_14",
-                Visualization = GameManager.SceneLoadVisualizations.Dream
-            });
+            GameManager.instance.BeginSceneTransition
+            (
+                new GameManager.SceneLoadInfo
+                {
+                    AlwaysUnloadUnusedAssets = true,
+                    EntryGateName = "bot3",
+                    PreventCameraFadeOut = false,
+                    SceneName = "Fungus2_14",
+                    Visualization = GameManager.SceneLoadVisualizations.Dream
+                }
+            );
 
-            Log("Finished Coroutine");
+            LogDebug("Finished Coroutine");
         }
 
         private Color GetNextRainbowColor()
@@ -59,41 +64,37 @@ namespace Mantis_Gods
 
             // the cycle repeats every 768
             int realCyclePos = RainbowPos % 768;
-            
+
             c.a = 1.0f;
-            
+
             if (realCyclePos < 256)
             {
-                c.b = 0;
                 c.r = (256 - realCyclePos) / 256f;
                 c.g = realCyclePos / 256f;
+                c.b = 0;
             }
             else if (realCyclePos < 512)
             {
-                c.b = (realCyclePos - 256) / 256f;
                 c.r = 0;
                 c.g = (512 - realCyclePos) / 256f;
+                c.b = (realCyclePos - 256) / 256f;
             }
             else
             {
-                c.b = (768 - realCyclePos) / 256f;
                 c.r = (realCyclePos - 512) / 256f;
                 c.g = 0;
+                c.b = (768 - realCyclePos) / 256f;
             }
 
             RainbowPos++;
-            
+
             return c;
         }
 
-        private static void Log(string str)
-        {
-            Logger.Log("[Mantis Gods]: " + str);
-        }
+        private static void LogDebug(string str) => Logger.LogDebug("[Mantis Gods]: " + str);
 
         public void OnDestroy()
         {
-            // So that they don't remain after you quit out
             USceneManager.sceneLoaded -= ResetScene;
             ModHooks.LanguageGetHook -= LangGet;
             ModHooks.GetPlayerBoolHook -= GetBool;
@@ -111,99 +112,110 @@ namespace Mantis_Gods
 
         private static GameObject ShotHandler(GameObject go)
         {
-            // if you haven't defeated the normal lords do nothing
-            if (!PlayerData.instance.defeatedMantisLords) return go;
+            // If you haven't defeated the normal lords, do nothing
+            if (!PlayerData.instance.defeatedMantisLords)
+                return go;
 
-            // check for spikes
-            if (!go.name.Contains("Shot Mantis Lord")) return go;
+            if (!go.name.Contains("Shot Mantis Lord"))
+                return go;
 
-            PlayMakerFSM shotFsm = go.LocateMyFSM("Control");
-            if (shotFsm == null) return go;
+            PlayMakerFSM shot = go.LocateMyFSM("Control");
+
+            if (shot == null)
+                return go;
+
             // 40, 40, 20, 20
-            shotFsm.GetAction<SetFloatValue>("Set L", 0).floatValue = -48f;
-            shotFsm.GetAction<SetFloatValue>("Set R", 0).floatValue = 48f;
-            shotFsm.GetAction<SetFloatValue>("Set L", 1).floatValue = -20f;
-            shotFsm.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
+            shot.GetAction<SetFloatValue>("Set L", 0).floatValue = -48f;
+            shot.GetAction<SetFloatValue>("Set R", 0).floatValue = 48f;
+            shot.GetAction<SetFloatValue>("Set L", 1).floatValue = -20f;
+            shot.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
 
             return go;
+        }
+
+        public void UpdateRainbow()
+        {
+            CurrentDelay++;
+
+            if (CurrentDelay < RainbowUpdateDelay)
+                return;
+
+            var tex = new Texture2D(1, 1);
+            tex.SetPixel(0, 0, GetNextRainbowColor());
+            tex.Apply();
+
+            _plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
+
+            CurrentDelay = 0;
         }
 
         public void Update()
         {
             if (RainbowFloor && _plane != null)
-            {
-                CurrentDelay++;
-                if (CurrentDelay >= RainbowUpdateDelay)
-                {
-                    Texture2D tex = new Texture2D(1, 1);
-                    tex.SetPixel(0, 0, GetNextRainbowColor());
-                    tex.Apply();
-                    _plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
-                    CurrentDelay = 0;
-                }
-            }
+                UpdateRainbow();
 
-            if (!PlayerData.instance.defeatedMantisLords) return;
-            if (_lord1 != null && _lord2 != null && _lord3 != null) return;
+            if (!PlayerData.instance.defeatedMantisLords)
+                return;
+
+            if (_lords.Any(x => x != null))
+                return;
 
             if (_mantisBattle == null)
-            {
                 _mantisBattle = GameObject.Find("Mantis Battle");
-            }
 
-            if (_lord1 == null)
+            if (_mantisBattle == null)
+                return;
+
+            _lords = new[]
             {
-                _lord1 = _mantisBattle.FindGameObjectInChildren("Mantis Lord");
-                if (_lord1 != null) _lord1.AddComponent<Lord>();
-            }
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord"),
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord S1"),
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord S2"),
+            };
 
-            if (_lord3 != null && _lord2 != null) return;
+            if (_lords.Any(x => x == null))
+                return;
 
-            _lord2 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S1");
-            _lord3 = _mantisBattle.FindGameObjectInChildren("Mantis Lord S2");
-
-            if (_lord3 == null || _lord2 == null) return;
-            
-            _lord2.AddComponent<Lord>();
-            _lord3.AddComponent<Lord>();
+            foreach (GameObject lord in _lords)
+                lord.AddComponent<Lord>();
         }
 
         private static Mesh CreateMesh(float width, float height)
         {
-            Mesh m = new Mesh
+            var m = new Mesh
             {
                 name = "ScriptedMesh",
-                vertices = new Vector3[]
+                vertices = new[]
                 {
                     new Vector3(-width, -height, 0.01f),
                     new Vector3(width, -height, 0.01f),
                     new Vector3(width, height, 0.01f),
                     new Vector3(-width, height, 0.01f)
                 },
-                uv = new Vector2[]
+                uv = new[]
                 {
                     new Vector2(0, 0),
                     new Vector2(0, 1),
                     new Vector2(1, 1),
                     new Vector2(1, 0)
                 },
-                triangles = new int[] {0, 1, 2, 0, 2, 3}
+                triangles = new[] { 0, 1, 2, 0, 2, 3 }
             };
+
             m.RecalculateNormals();
+
             return m;
         }
 
-        private bool GetBool(string originalSet, bool orig)
+        private static bool GetBool(string originalSet, bool orig)
         {
-            if (originalSet == "defeatedMantisLords"
-                && PlayerData.instance.defeatedMantisLords
-                && !MantisGods.Instance.Settings.DefeatedGods
-                && HeroController.instance.hero_state == ActorStates.no_input)
-            {
-                return false;
-            }
-
-            return orig;
+            return (
+                    originalSet != "defeatedMantisLords"
+                    || !PlayerData.instance.defeatedMantisLords
+                    || MantisGods.Instance.LocalData.DefeatedGods
+                    || HeroController.instance.hero_state != ActorStates.no_input
+                )
+                && orig;
         }
 
 
@@ -219,55 +231,63 @@ namespace Mantis_Gods
 
         private void ResetScene(Scene arg0, LoadSceneMode arg1)
         {
-            _lord1 = _lord2 = _lord3 = null;
+            for (int i = 0; i < _lords.Length; i++)
+                _lords[i] = null;
 
-            if (arg0.name != "Fungus2_15_boss") return;
-            if (!PlayerData.instance.defeatedMantisLords) return;
+            if (arg0.name != "Fungus2_15_boss" || !PlayerData.instance.defeatedMantisLords)
+                return;
 
             // Set the mapZone to White Palace so when you die
             // you don't spawn a shade and don't lose geo
             GameManager.instance.sm.mapZone = MapZone.WHITE_PALACE;
-
-            // Destroy all game objects that aren't the BossLoader
-            // BossLoader unloads the mantis lord stuff after you die
-            foreach (GameObject go in USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects())
-            {
-                if (NormalArena)
-                {
-                    if 
-                    (
-                        !KeepSpikes 
-                        && go.name.Contains("Deep Spikes")
-                        || go.GetComponent<HealthManager>() != null
-                    )
-                    {
-                        Destroy(go);
-                    }
-                }
-                else
-                {
-                    if (go.name == "BossLoader") continue;
-                    Destroy(go);
-                }
-            }
 
             GameObject[] floors =
             {
                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors"),
                 GameObject.Find("Mantis Battle/mantis_lord_opening_floors (1)")
             };
+            
+            GameObject[] roots = USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects();
 
             if (NormalArena)
             {
-                if (KeepSpikes) return;
+                TransformArena(roots, floors);
+            }
+            else
+            {
+                CreateArena(roots, floors);
+            }
+        }
 
-                foreach (GameObject go in floors)
+        private static void TransformArena(GameObject[] roots, GameObject[] floors)
+        {
+            foreach (GameObject go in roots)
+            {
+                if (!KeepSpikes && go.name.Contains("Deep Spikes") || go.GetComponent<HealthManager>() != null)
                 {
-                    go.LocateMyFSM("Floor Control")
-                      .ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
+                    Destroy(go);
                 }
-
+            }
+            
+            if (KeepSpikes)
                 return;
+
+            foreach (GameObject go in floors)
+            {
+                go.LocateMyFSM("Floor Control").ChangeTransition("Extended", "MLORD FLOOR RETRACT", "Extended");
+            }
+        }
+
+        private void CreateArena(GameObject[] roots, GameObject[] floors)
+        {
+            // Destroy all game objects that aren't the BossLoader
+            // BossLoader unloads the mantis lord stuff after you die
+            foreach (GameObject go in roots)
+            {
+                if (go.name == "BossLoader")
+                    continue;
+
+                Destroy(go);
             }
 
             // Remove the brown floor thingies
@@ -324,10 +344,10 @@ namespace Mantis_Gods
         {
             // If you've already defeated mantis lords and you're defeating them again
             // then you've just beat mantis gods
-            if (originalSet != "defeatedMantisLords" || !PlayerData.instance.defeatedMantisLords || !value) 
+            if (originalSet != "defeatedMantisLords" || !PlayerData.instance.defeatedMantisLords || !value)
                 return value;
-            
-            MantisGods.Instance.Settings.DefeatedGods = true;
+
+            MantisGods.Instance.LocalData.DefeatedGods = true;
             StartCoroutine(BattleBeat());
 
             return true;

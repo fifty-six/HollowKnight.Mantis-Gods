@@ -1,18 +1,20 @@
 ﻿using Modding;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using UnityEngine;
 using UObject = UnityEngine.Object;
 
 namespace Mantis_Gods
 {
+    [UsedImplicitly]
     public class MantisGods : Mod, ILocalSettings<LocalSettings>, IGlobalSettings<GlobalSettings>, ITogglableMod
     {
         public static MantisGods Instance;
 
-        public LocalSettings Settings=new LocalSettings();
+        public LocalSettings LocalData = new LocalSettings();
         
-        private GlobalSettings _global=new GlobalSettings();
+        private GlobalSettings _settings = new GlobalSettings();
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
@@ -25,27 +27,25 @@ namespace Mantis_Gods
             ModHooks.AfterSavegameLoadHook += AfterSavegameLoad;
             ModHooks.NewGameHook += AddComponent;
 
-            // in game
+            // In game
             if (HeroController.instance != null && GameManager.instance.gameObject.GetComponent<Mantis>() == null)
-            {
-                GameManager.instance.gameObject.AddComponent<Mantis>();
-            }
+                AddComponent();
         }
 
         private void AddComponent()
         {
-            if (_global.RainbowFloor)
+            if (_settings.RainbowFloor) 
             {
                 Mantis.RainbowFloor = true;
-                Mantis.RainbowUpdateDelay = _global.RainbowUpdateDelay;
+                Mantis.RainbowUpdateDelay = _settings.RainbowUpdateDelay;
             }
             else
             {
-                Mantis.FloorColor = new Color(_global.FloorColorRed, _global.FloorColorGreen, _global.FloorColorBlue, _global.FloorColorAlpha);
+                Mantis.FloorColor = _settings.FloorColor;
             }
 
-            Mantis.NormalArena = _global.NormalArena;
-            Mantis.KeepSpikes = _global.KeepSpikes;
+            Mantis.NormalArena = _settings.NormalArena;
+            Mantis.KeepSpikes = _settings.KeepSpikes;
 
             GameManager.instance.gameObject.AddComponent<Mantis>();
         }
@@ -57,28 +57,29 @@ namespace Mantis_Gods
             ModHooks.AfterSavegameLoadHook -= AfterSavegameLoad;
             ModHooks.NewGameHook -= AddComponent;
 
-            // in game
+            // In game
             if (GameManager.instance != null)
-            {
                 UObject.Destroy(GameManager.instance.gameObject.GetComponent<Mantis>());
-            }
         }
 
-        public void OnLoadLocal(LocalSettings s) => Settings = s;
+        public void OnLoadLocal(LocalSettings s) => LocalData = s;
 
-        public LocalSettings OnSaveLocal() => Settings;
+        public LocalSettings OnSaveLocal() => LocalData;
 
-        public void OnLoadGlobal(GlobalSettings s) => _global = s;
+        public void OnLoadGlobal(GlobalSettings s) => _settings = s;
 
-        public GlobalSettings OnSaveGlobal() => _global;
+        public GlobalSettings OnSaveGlobal() => _settings;
     }
 
     public static class Extensions
     {
         public static GameObject FindGameObjectInChildren(this GameObject gameObject, string name) => gameObject == null
             ? null
-            : (from t in gameObject.GetComponentsInChildren<Transform>(true)
-                where t.name == name
-                select t.gameObject).FirstOrDefault();
+            : (
+                gameObject.GetComponentsInChildren<Transform>(true)
+                          .Where(t => t.name == name)
+                          .Select(t => t.gameObject)
+                          .FirstOrDefault()
+            );
     }
 }
