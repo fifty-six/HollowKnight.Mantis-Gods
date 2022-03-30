@@ -1,5 +1,4 @@
 ﻿using System;
-using Modding;
 using UnityEngine;
 
 namespace Mantis_Gods
@@ -9,6 +8,8 @@ namespace Mantis_Gods
     {
         public bool RainbowFloor;
         public int RainbowUpdateDelay = 6;
+        
+        public bool AllowInPantheons;
         
         [SerializeField]
         public SColor FloorColor = Color.black;

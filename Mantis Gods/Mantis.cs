@@ -14,18 +14,19 @@ namespace Mantis_Gods
 {
     internal class Mantis : MonoBehaviour
     {
-        public static Color FloorColor;
-        public static bool RainbowFloor;
-        public static int RainbowUpdateDelay;
-        public static bool NormalArena;
-        public static bool KeepSpikes;
+        private static GlobalSettings Config => MantisGods.Instance.Settings;
         
+        private static int RainbowUpdateDelay { get; } =  MantisGods.Instance.Settings.RainbowUpdateDelay;
+
+        public Color FloorColor;
+
         public int CurrentDelay;
         public int RainbowPos;
 
         private GameObject[] _lords = new GameObject[3];
         private GameObject _mantisBattle;
         private GameObject _plane;
+        private bool _inBattle;
 
         private IEnumerator BattleBeat()
         {
@@ -110,10 +111,10 @@ namespace Mantis_Gods
             ModHooks.ObjectPoolSpawnHook += ShotHandler;
         }
 
-        private static GameObject ShotHandler(GameObject go)
+        private GameObject ShotHandler(GameObject go)
         {
             // If you haven't defeated the normal lords, do nothing
-            if (!PlayerData.instance.defeatedMantisLords)
+            if (!_inBattle)
                 return go;
 
             if (!go.name.Contains("Shot Mantis Lord"))
@@ -151,33 +152,8 @@ namespace Mantis_Gods
 
         public void Update()
         {
-            if (RainbowFloor && _plane != null)
+            if (Config.RainbowFloor && _plane != null)
                 UpdateRainbow();
-
-            if (!PlayerData.instance.defeatedMantisLords)
-                return;
-
-            if (_lords.Any(x => x != null))
-                return;
-
-            if (_mantisBattle == null)
-                _mantisBattle = GameObject.Find("Mantis Battle");
-
-            if (_mantisBattle == null)
-                return;
-
-            _lords = new[]
-            {
-                _mantisBattle.FindGameObjectInChildren("Mantis Lord"),
-                _mantisBattle.FindGameObjectInChildren("Mantis Lord S1"),
-                _mantisBattle.FindGameObjectInChildren("Mantis Lord S2"),
-            };
-
-            if (_lords.Any(x => x == null))
-                return;
-
-            foreach (GameObject lord in _lords)
-                lord.AddComponent<Lord>();
         }
 
         private static Mesh CreateMesh(float width, float height)
@@ -221,9 +197,9 @@ namespace Mantis_Gods
 
         // Used to override the text for Mantis Lords
         // Mantis Lords => Mantis Gods
-        private static string LangGet(string key, string sheetTitle, string orig)
+        private string LangGet(string key, string sheetTitle, string orig)
         {
-            if (key == "MANTIS_LORDS_MAIN" && PlayerData.instance.defeatedMantisLords)
+            if (key == "MANTIS_LORDS_MAIN" && _inBattle)
                 return "Gods";
 
             return orig;
@@ -231,11 +207,26 @@ namespace Mantis_Gods
 
         private void ResetScene(Scene arg0, LoadSceneMode arg1)
         {
+            _inBattle = false;
+            
             for (int i = 0; i < _lords.Length; i++)
                 _lords[i] = null;
 
+
+            if (arg0.name is "GG_Mantis_Lords" or "GG_Mantis_Lords_V")
+            {
+                if (BossSequenceController.IsInSequence && !Config.AllowInPantheons)
+                    return;
+                
+                _inBattle = true;
+                StartCoroutine(AddComponents());
+            }
+
             if (arg0.name != "Fungus2_15_boss" || !PlayerData.instance.defeatedMantisLords)
                 return;
+
+            _inBattle = true;
+            StartCoroutine(AddComponents());
 
             // Set the mapZone to White Palace so when you die
             // you don't spawn a shade and don't lose geo
@@ -249,7 +240,7 @@ namespace Mantis_Gods
             
             GameObject[] roots = USceneManager.GetSceneByName("Fungus2_15").GetRootGameObjects();
 
-            if (NormalArena)
+            if (MantisGods.Instance.Settings.NormalArena)
             {
                 TransformArena(roots, floors);
             }
@@ -259,17 +250,44 @@ namespace Mantis_Gods
             }
         }
 
-        private static void TransformArena(GameObject[] roots, GameObject[] floors)
+        private IEnumerator AddComponents()
+        {
+            yield return null;
+
+            if (_lords.Any(x => x != null))
+                yield break;
+
+            if (_mantisBattle == null)
+                _mantisBattle = GameObject.Find("Mantis Battle");
+
+            if (_mantisBattle == null)
+                yield break;
+
+            _lords = new[]
+            {
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord"),
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord S1"),
+                _mantisBattle.FindGameObjectInChildren("Mantis Lord S2"),
+            };
+
+            if (_lords.Any(x => x == null))
+                yield break;
+
+            foreach (GameObject lord in _lords)
+                lord.AddComponent<Lord>();
+        }
+
+        private void TransformArena(GameObject[] roots, GameObject[] floors)
         {
             foreach (GameObject go in roots)
             {
-                if (!KeepSpikes && go.name.Contains("Deep Spikes") || go.GetComponent<HealthManager>() != null)
+                if (!Config.KeepSpikes && go.name.Contains("Deep Spikes") || go.GetComponent<HealthManager>() != null)
                 {
                     Destroy(go);
                 }
             }
             
-            if (KeepSpikes)
+            if (Config.KeepSpikes)
                 return;
 
             foreach (GameObject go in floors)
@@ -315,7 +333,7 @@ namespace Mantis_Gods
             renderer.material.shader = Shader.Find("Particles/Additive");
 
             // Color
-            if (RainbowFloor)
+            if (Config.RainbowFloor)
             {
                 var rand = new Random();
                 RainbowPos = rand.Next(0, 767);

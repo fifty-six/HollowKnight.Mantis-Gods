@@ -12,9 +12,9 @@ namespace Mantis_Gods
     {
         public static MantisGods Instance;
 
-        public LocalSettings LocalData = new LocalSettings();
+        public LocalSettings LocalData { get; private set; } = new LocalSettings();
         
-        private GlobalSettings _settings = new GlobalSettings();
+        public GlobalSettings Settings { get; private set; } = new GlobalSettings();
 
         public override string GetVersion() => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
@@ -34,20 +34,7 @@ namespace Mantis_Gods
 
         private void AddComponent()
         {
-            if (_settings.RainbowFloor) 
-            {
-                Mantis.RainbowFloor = true;
-                Mantis.RainbowUpdateDelay = _settings.RainbowUpdateDelay;
-            }
-            else
-            {
-                Mantis.FloorColor = _settings.FloorColor;
-            }
-
-            Mantis.NormalArena = _settings.NormalArena;
-            Mantis.KeepSpikes = _settings.KeepSpikes;
-
-            GameManager.instance.gameObject.AddComponent<Mantis>();
+            GameManager.instance.gameObject.AddComponent<Mantis>().FloorColor = Settings.FloorColor;
         }
 
         private void AfterSavegameLoad(SaveGameData data) => AddComponent();
@@ -66,9 +53,9 @@ namespace Mantis_Gods
 
         public LocalSettings OnSaveLocal() => LocalData;
 
-        public void OnLoadGlobal(GlobalSettings s) => _settings = s;
+        public void OnLoadGlobal(GlobalSettings s) => Settings = s;
 
-        public GlobalSettings OnSaveGlobal() => _settings;
+        public GlobalSettings OnSaveGlobal() => Settings;
     }
 
     public static class Extensions
