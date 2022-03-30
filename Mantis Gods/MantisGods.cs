@@ -32,12 +32,9 @@ namespace Mantis_Gods
                 AddComponent();
         }
 
-        private void AddComponent()
-        {
-            GameManager.instance.gameObject.AddComponent<Mantis>().FloorColor = Settings.FloorColor;
-        }
+        private static void AddComponent() => GameManager.instance.gameObject.AddComponent<Mantis>();
 
-        private void AfterSavegameLoad(SaveGameData data) => AddComponent();
+        private static void AfterSavegameLoad(SaveGameData data) => AddComponent();
 
         public void Unload()
         {

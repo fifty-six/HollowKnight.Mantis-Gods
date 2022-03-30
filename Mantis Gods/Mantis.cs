@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Vasi;
 using Logger = Modding.Logger;
-using Random = System.Random;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace Mantis_Gods
@@ -16,16 +15,10 @@ namespace Mantis_Gods
     {
         private static GlobalSettings Config => MantisGods.Instance.Settings;
         
-        private static int RainbowUpdateDelay { get; } =  MantisGods.Instance.Settings.RainbowUpdateDelay;
-
-        public Color FloorColor;
-
-        public int CurrentDelay;
-        public int RainbowPos;
-
         private GameObject[] _lords = new GameObject[3];
         private GameObject _mantisBattle;
         private GameObject _plane;
+        
         private bool _inBattle;
 
         private IEnumerator BattleBeat()
@@ -57,39 +50,6 @@ namespace Mantis_Gods
             );
 
             LogDebug("Finished Coroutine");
-        }
-
-        private Color GetNextRainbowColor()
-        {
-            var c = new Color();
-
-            // the cycle repeats every 768
-            int realCyclePos = RainbowPos % 768;
-
-            c.a = 1.0f;
-
-            if (realCyclePos < 256)
-            {
-                c.r = (256 - realCyclePos) / 256f;
-                c.g = realCyclePos / 256f;
-                c.b = 0;
-            }
-            else if (realCyclePos < 512)
-            {
-                c.r = 0;
-                c.g = (512 - realCyclePos) / 256f;
-                c.b = (realCyclePos - 256) / 256f;
-            }
-            else
-            {
-                c.r = (realCyclePos - 512) / 256f;
-                c.g = 0;
-                c.b = (768 - realCyclePos) / 256f;
-            }
-
-            RainbowPos++;
-
-            return c;
         }
 
         private static void LogDebug(string str) => Logger.LogDebug("[Mantis Gods]: " + str);
@@ -132,28 +92,6 @@ namespace Mantis_Gods
             shot.GetAction<SetFloatValue>("Set R", 1).floatValue = 20f;
 
             return go;
-        }
-
-        public void UpdateRainbow()
-        {
-            CurrentDelay++;
-
-            if (CurrentDelay < RainbowUpdateDelay)
-                return;
-
-            var tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, GetNextRainbowColor());
-            tex.Apply();
-
-            _plane.GetComponent<MeshRenderer>().material.mainTexture = tex;
-
-            CurrentDelay = 0;
-        }
-
-        public void Update()
-        {
-            if (Config.RainbowFloor && _plane != null)
-                UpdateRainbow();
         }
 
         private static Mesh CreateMesh(float width, float height)
@@ -332,18 +270,9 @@ namespace Mantis_Gods
             var renderer = _plane.AddComponent<MeshRenderer>();
             renderer.material.shader = Shader.Find("Particles/Additive");
 
-            // Color
-            if (Config.RainbowFloor)
-            {
-                var rand = new Random();
-                RainbowPos = rand.Next(0, 767);
-                FloorColor = GetNextRainbowColor();
-                CurrentDelay = 0;
-            }
-
             // Texture
             var tex = new Texture2D(1, 1);
-            tex.SetPixel(0, 0, FloorColor);
+            tex.SetPixel(0, 0, Color.black);
             tex.Apply();
 
             // Renderer
